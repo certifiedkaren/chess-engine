@@ -1,0 +1,21 @@
+.container {
+  width: 50vw;
+  margin-left: 15vw;
+  position: absolute;
+}
+
+/* make it so that there is a popup with checkmate */
+/* .box1 {
+  position: relative;
+  z-index: 2;
+  width: 200px;
+  height: 200px;
+  background: gray;
+} */
+
+.box2 {
+  /* position: absolute; */
+  top: 20px;
+  left: 20px;
+  /* z-index: 1; */
+}

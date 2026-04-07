@@ -1,7 +1,11 @@
 import { useState, useRef } from "react";
 import "./App.css";
 import { Chess, type Square } from "chess.js";
-import { Chessboard, type SquareHandlerArgs } from "react-chessboard";
+import {
+  Chessboard,
+  type PieceDropHandlerArgs,
+  type SquareHandlerArgs,
+} from "react-chessboard";
 
 function App() {
   const chessGameRef = useRef(new Chess());
@@ -9,6 +13,20 @@ function App() {
   const [chessPosition, setChessPosition] = useState(chessGame.fen());
   const [moveFrom, setMoveFrom] = useState("");
   const [optionSquares, setOptionSquares] = useState({});
+
+  function gameOver(): string | void {
+    if (chessGame.isStalemate()) {
+      return "draw: stalemate";
+    }
+    if (chessGame.isThreefoldRepetition()) {
+      return "draw: repetition";
+    }
+    if (chessGame.isGameOver()) {
+      // TODO: add who won, I would assume you track who made the last move
+      // then that person would be th winner
+      return "game over";
+    }
+  }
 
   function getMoveOptions(square: Square) {
     const moves = chessGame.moves({
@@ -84,15 +102,47 @@ function App() {
     setOptionSquares({});
   }
 
+  function onPieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs) {
+    if (!targetSquare) {
+      return false;
+    }
+
+    try {
+      chessGame.move({
+        from: sourceSquare,
+        to: targetSquare as string,
+        promotion: "q",
+      });
+
+      setChessPosition(chessGame.fen());
+      setMoveFrom("");
+      setOptionSquares({});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   const chessboardOptions = {
-    allowDragging: false,
+    onPieceDrop,
     onSquareClick,
     position: chessPosition,
     squareStyles: optionSquares,
-    id: "click-to-move",
+    id: "click-or-drag-to-move",
   };
 
-  return <Chessboard options={chessboardOptions} />;
+  const result = gameOver();
+
+  return (
+    <div className="container">
+      <div className="box1">
+        {typeof result == "string" && <h1>{result}</h1>}
+      </div>
+      <div className="box2">
+        <Chessboard options={chessboardOptions} />
+      </div>
+    </div>
+  );
 }
 
 export default App;
