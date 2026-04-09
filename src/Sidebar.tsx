@@ -16,9 +16,11 @@ add check-valid pgn function
 // pass the props into chessboard component, which will make
 // the moves on button press
 import { useState } from "react";
+import styles from "./Sidebar.module.css";
 
 const Sidebar = () => {
   const [pgn, setPgn] = useState("");
+  const [loadedPgn, setLoadedPgn] = useState<string | null>(null);
   const [whiteArr, setWhiteArr] = useState([]);
   const [blackArr, setBlackArr] = useState([]);
 
@@ -44,14 +46,30 @@ const Sidebar = () => {
   }
 
   return (
-    <div>
-      <textarea
-        value={pgn}
-        rows={10}
-        cols={50}
-        onChange={(e) => setPgn(e.target.value)}
-        placeholder="Paste PGN contents"
-      ></textarea>
+    <div className={styles.sidebarContainer}>
+      {!loadedPgn ? (
+        <>
+          <textarea
+            value={pgn}
+            rows={10}
+            cols={50}
+            onChange={(e) => setPgn(e.target.value)}
+            placeholder="Paste PGN contents"
+          ></textarea>
+          <button type="button" onClick={() => setLoadedPgn(pgn)}>
+            import pgn
+          </button>
+        </>
+      ) : (
+        <div className={styles.arrowButtonGroup}>
+          <button type="button" className={styles.arrowButton}>
+            {"<"}{" "}
+          </button>
+          <button type="button" className={styles.arrowButton}>
+            {">"}{" "}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

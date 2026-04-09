@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import "./ChessboardPanel.css";
+import styles from "./ChessboardPanel.module.css";
 import { Chess, type Square } from "chess.js";
 import {
   Chessboard,
@@ -134,7 +134,7 @@ function ChessboardPanel() {
   const result = gameOver();
 
   return (
-    <div className="container">
+    <div className={styles.chessboardContainer}>
       <div className="box1">
         {typeof result == "string" && <h1>{result}</h1>}
       </div>
