@@ -7,10 +7,13 @@ import {
   type SquareHandlerArgs,
 } from "react-chessboard";
 
-function ChessboardPanel() {
-  const chessGameRef = useRef(new Chess());
-  const chessGame = chessGameRef.current;
-  const [chessPosition, setChessPosition] = useState(chessGame.fen());
+interface Props {
+  fen: string;
+  onUserMove: (from: string, to: string) => boolean;
+}
+
+function ChessboardPanel({ fen, onUserMove }: Props) {
+  const chessGame = new Chess(fen);
   const [moveFrom, setMoveFrom] = useState("");
   const [optionSquares, setOptionSquares] = useState({});
 
@@ -22,8 +25,6 @@ function ChessboardPanel() {
       return "draw: repetition";
     }
     if (chessGame.isGameOver()) {
-      // TODO: add who won, I would assume you track who made the last move
-      // then that person would be th winner
       return "game over";
     }
   }
@@ -82,51 +83,31 @@ function ChessboardPanel() {
       return;
     }
 
-    try {
-      chessGame.move({
-        from: moveFrom,
-        to: square,
-        promotion: "q",
-      });
-    } catch {
-      const hasMoveOptions = getMoveOptions(square as Square);
-      if (hasMoveOptions) {
-        setMoveFrom(square);
-      }
+    const didMove = onUserMove(moveFrom, square);
+    if (didMove) {
+      setMoveFrom("");
+      setOptionSquares({});
       return;
     }
-
-    setChessPosition(chessGame.fen());
-
-    setMoveFrom("");
-    setOptionSquares({});
   }
 
   function onPieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs) {
     if (!targetSquare) {
       return false;
     }
-
-    try {
-      chessGame.move({
-        from: sourceSquare,
-        to: targetSquare as string,
-        promotion: "q",
-      });
-
-      setChessPosition(chessGame.fen());
+    const didMove = onUserMove(sourceSquare, targetSquare);
+    if (didMove) {
       setMoveFrom("");
       setOptionSquares({});
       return true;
-    } catch {
-      return false;
     }
+    return false;
   }
 
   const chessboardOptions = {
     onPieceDrop,
     onSquareClick,
-    position: chessPosition,
+    position: fen,
     squareStyles: optionSquares,
     id: "click-or-drag-to-move",
   };
