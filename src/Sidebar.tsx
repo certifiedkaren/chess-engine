@@ -10,66 +10,58 @@ Qe2 Qh1# 0-1
 
 O-O - castle kingside
 O-O-O - queenside castle
-add check-valid pgn function
 */
 
-// pass the props into chessboard component, which will make
-// the moves on button press
-import { useState } from "react";
 import styles from "./Sidebar.module.css";
 
-const Sidebar = () => {
-  const [pgn, setPgn] = useState("");
-  const [loadedPgn, setLoadedPgn] = useState<string | null>(null);
-  const [whiteArr, setWhiteArr] = useState([]);
-  const [blackArr, setBlackArr] = useState([]);
+interface Props {
+  pgn: string;
+  setPgn: React.Dispatch<React.SetStateAction<string>>;
+  onNextMove: () => void;
+  onPrevMove: () => void;
+  onImportPgn: (pgn: string) => void;
+}
 
-  function isValidPgn(pgn: string) {
-    // implement this when I have time, checks if its a valid pgn
-  }
-
-  function filterPgn(pgn: string): string[] {
-    return pgn
-      .replace(/\d+\./g, "")
-      .replace(/0-0|0-1|1\/2-1\/2/g, "")
-      .trim()
-      .split(/\s+/);
-  }
-
-  function loadPgn(pgn: string[]): {
-    whiteArr: string[];
-    blackArr: string[];
-  } {
-    let whiteArr = pgn.filter((_, i) => i % 1 == 0);
-    let blackArr = pgn.filter((_, i) => i % 1 == 1);
-    return { whiteArr, blackArr };
-  }
-
+const Sidebar = ({
+  pgn,
+  setPgn,
+  onNextMove,
+  onPrevMove,
+  onImportPgn,
+}: Props) => {
   return (
     <div className={styles.sidebarContainer}>
-      {!loadedPgn ? (
-        <>
-          <textarea
-            value={pgn}
-            rows={10}
-            cols={50}
-            onChange={(e) => setPgn(e.target.value)}
-            placeholder="Paste PGN contents"
-          ></textarea>
-          <button type="button" onClick={() => setLoadedPgn(pgn)}>
-            import pgn
-          </button>
-        </>
-      ) : (
-        <div className={styles.arrowButtonGroup}>
-          <button type="button" className={styles.arrowButton}>
-            {"<"}{" "}
-          </button>
-          <button type="button" className={styles.arrowButton}>
-            {">"}{" "}
-          </button>
-        </div>
-      )}
+      <>
+        <textarea
+          value={pgn}
+          rows={10}
+          cols={50}
+          onChange={(e) => setPgn(e.target.value)}
+          placeholder="Paste PGN contents"
+        ></textarea>
+        {/* add a popup when the pgn was imported */}
+        <button type="button" onClick={() => onImportPgn(pgn)}>
+          import pgn
+        </button>
+      </>
+      <div className={styles.arrowButtonGroup}>
+        {/* also trigger on the arrow keys */}
+        <button
+          type="button"
+          className={styles.arrowButton}
+          onClick={() => onPrevMove()}
+        >
+          {"<"}{" "}
+        </button>
+        <button
+          type="button"
+          className={styles.arrowButton}
+          onClick={() => onNextMove()}
+        >
+          {">"} {/* add skip to beginning and end buttons */}
+        </button>
+      </div>
+      )
     </div>
   );
 };
