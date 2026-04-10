@@ -1,4 +1,10 @@
 .container {
   display: flex;
   flex-direction: row;
+  gap: 2vw;
+  margin-top: 5vw;
+}
+
+[id^="click-or-drag-to-move-square"] span span {
+  font-size: 24px !important;
 }

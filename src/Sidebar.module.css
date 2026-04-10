@@ -5,7 +5,9 @@
 
 .arrowButtonGroup {
   display: flex;
-  gap: 10px;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 .arrowButton {

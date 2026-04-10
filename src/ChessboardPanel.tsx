@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import styles from "./ChessboardPanel.module.css";
 import { Chess, type Square } from "chess.js";
 import {

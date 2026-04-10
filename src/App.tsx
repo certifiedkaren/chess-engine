@@ -16,6 +16,14 @@ const App = () => {
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
 
+  function gotoBeginning() {
+    setCurrentIndex(0);
+  }
+
+  function gotoEnd() {
+    setCurrentIndex(mainlineFens.length - 1);
+  }
+
   function nextMove() {
     if (currentIndex < mainlineMoves.length) {
       setCurrentIndex((i) => i + 1);
@@ -79,6 +87,8 @@ const App = () => {
         onNextMove={nextMove}
         onPrevMove={prevMove}
         onImportPgn={importPgn}
+        onBeginning={gotoBeginning}
+        onEnd={gotoEnd}
       />
     </div>
   );
