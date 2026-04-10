@@ -35,7 +35,6 @@ const Sidebar = ({
         </button>
       </>
       <div className={styles.arrowButtonGroup}>
-        {/* also trigger on the arrow keys */}
         <button
           type="button"
           className={styles.arrowButton}

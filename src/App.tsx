@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ChessboardPanel from "./ChessboardPanel";
 import { Chess, type Square } from "chess.js";
 import Sidebar from "./Sidebar";
@@ -15,6 +15,31 @@ const App = () => {
   const [currentFen, setCurrentFen] = useState("");
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
+
+  (useEffect(() => {
+    function handleKeypress(e: KeyboardEvent) {
+      if (
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLInputElement
+      ) {
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextMove();
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevMove();
+      }
+    }
+    window.addEventListener("keydown", handleKeypress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeypress);
+    };
+  }),
+    [nextMove, prevMove, mainlineFens.length]);
 
   function gotoBeginning() {
     setCurrentIndex(0);
