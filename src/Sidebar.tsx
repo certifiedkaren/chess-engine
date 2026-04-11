@@ -73,14 +73,14 @@ const Sidebar = ({
         </button>
       </div>
       <div className={styles.movesContainer}>
-        <ol>
+        <ol style={{ color: "gray" }}>
           {rows.map((row, rowIndex) => (
-            <li key={rowIndex}>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {row.map((move, moveIndex) => (
-                  <button key={moveIndex}>{move}</button>
-                ))}
-              </div>
+            <li key={rowIndex} className={styles.movesRow}>
+              <span className={styles.movesNumber}>{rowIndex + 1}.</span>
+              <button className={styles.movesButton}>{row[0]}</button>
+              {row[1] ? (
+                <button className={styles.movesButton}>{row[1]}</button>
+              ) : null}
             </li>
           ))}
         </ol>

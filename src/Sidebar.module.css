@@ -24,9 +24,40 @@
 }
 
 .movesContainer {
-  width: 300px;
+  width: 400px;
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 8px;
+  margin-top: 10px;
+  list-style: none;
+}
+
+.movesButton {
+  border: none;
+  color: white;
+  background-color: #1c1c1c;
+  text-align: center;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 6px 10px;
+  width: 100%;
+}
+
+.movesRow {
+  display: grid;
+  grid-template-columns: 32px 80px 64px;
+  align-items: center;
+  column-gap: 24px;
+  margin-bottom: 8px;
+}
+
+.movesNumber {
+  color: #999;
+  text-align: right;
+}
+
+.movesButton:hover {
+  background-color: gray;
 }
