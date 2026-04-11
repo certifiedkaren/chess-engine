@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import ChessboardPanel from "./ChessboardPanel";
-import { Chess, type Square } from "chess.js";
+import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
@@ -114,6 +114,7 @@ const App = () => {
         onImportPgn={importPgn}
         onBeginning={gotoBeginning}
         onEnd={gotoEnd}
+        mainlineMoves={mainlineMoves}
       />
     </div>
   );

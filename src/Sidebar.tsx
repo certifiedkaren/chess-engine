@@ -8,6 +8,7 @@ interface Props {
   onImportPgn: (pgn: string) => void;
   onBeginning: () => void;
   onEnd: () => void;
+  mainlineMoves: string[];
 }
 
 const Sidebar = ({
@@ -18,7 +19,12 @@ const Sidebar = ({
   onImportPgn,
   onBeginning,
   onEnd,
+  mainlineMoves,
 }: Props) => {
+  const rows = [];
+  for (let i = 0; i < mainlineMoves.length; i += 2) {
+    rows.push(mainlineMoves.slice(i, i + 2));
+  }
   return (
     <div className={styles.sidebarContainer}>
       <>
@@ -65,6 +71,19 @@ const Sidebar = ({
         >
           {">>"}
         </button>
+      </div>
+      <div className={styles.movesContainer}>
+        <ol>
+          {rows.map((row, rowIndex) => (
+            <li key={rowIndex}>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {row.map((move, moveIndex) => (
+                  <button key={moveIndex}>{move}</button>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
   );

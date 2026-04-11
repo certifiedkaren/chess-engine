@@ -22,3 +22,11 @@
 .arrowButton:hover {
   background-color: #2563eb;
 }
+
+.movesContainer {
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
