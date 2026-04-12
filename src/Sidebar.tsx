@@ -9,6 +9,7 @@ interface Props {
   onBeginning: () => void;
   onEnd: () => void;
   mainlineMoves: string[];
+  currentIndex: number;
 }
 
 const Sidebar = ({
@@ -20,6 +21,7 @@ const Sidebar = ({
   onBeginning,
   onEnd,
   mainlineMoves,
+  currentIndex,
 }: Props) => {
   const rows = [];
   for (let i = 0; i < mainlineMoves.length; i += 2) {
@@ -77,14 +79,19 @@ const Sidebar = ({
           {rows.map((row, rowIndex) => (
             <tr key={rowIndex}>
               <td className={styles.movesNumber}>{rowIndex + 1}</td>
-              <td>
-                <button className={styles.movesButton}>{row[0]}</button>
-              </td>
-              {row[1] ? (
-                <td>
-                  <button className={styles.movesButton}>{row[1]}</button>
-                </td>
-              ) : null}
+              {row.map((move, moveIndex) => {
+                const currentMove = rowIndex * 2 + moveIndex;
+                return (
+                  <td>
+                    <button
+                      className={`${styles.movesButton} ${currentIndex === currentMove ? styles.currentMove : ""}`}
+                    >
+                      {move}
+                    </button>
+                  </td>
+                );
+              })}
+              {row.length === 1 && <td />}
             </tr>
           ))}
         </table>

@@ -115,6 +115,7 @@ const App = () => {
         onBeginning={gotoBeginning}
         onEnd={gotoEnd}
         mainlineMoves={mainlineMoves}
+        currentIndex={currentIndex}
       />
     </div>
   );

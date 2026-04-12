@@ -51,8 +51,12 @@
   width: 100%;
 }
 
+.currentMove {
+  background-color: #4a4a4a;
+}
+
 .movesButton:hover {
-  background-color: gray;
+  background-color: #2a2a2a;
 }
 
 .movesNumber {
