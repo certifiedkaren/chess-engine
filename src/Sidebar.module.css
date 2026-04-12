@@ -25,12 +25,18 @@
 
 .movesContainer {
   width: 400px;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 8px;
-  margin-top: 10px;
-  list-style: none;
+  box-sizing: border-box;
+  margin-top: 18px;
+}
+
+.movesTable {
+  border-collapse: collapse;
+  margin-top: 8px;
+  width: 100%;
 }
 
 .movesButton {
@@ -45,19 +51,12 @@
   width: 100%;
 }
 
-.movesRow {
-  display: grid;
-  grid-template-columns: 32px 80px 64px;
-  align-items: center;
-  column-gap: 24px;
-  margin-bottom: 8px;
+.movesButton:hover {
+  background-color: gray;
 }
 
 .movesNumber {
   color: #999;
   text-align: right;
-}
-
-.movesButton:hover {
-  background-color: gray;
+  padding-right: 10px;
 }
