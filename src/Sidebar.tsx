@@ -1,32 +1,42 @@
 import styles from "./Sidebar.module.css";
 
-interface Props {
-  pgn: string;
-  setPgn: React.Dispatch<React.SetStateAction<string>>;
-  onNextMove: () => void;
-  onPrevMove: () => void;
-  onImportPgn: (pgn: string) => void;
-  onBeginning: () => void;
-  onEnd: () => void;
-  mainlineMoves: string[];
-  currentIndex: number;
-}
+type SidebarProps = {
+  pgnState: {
+    pgn: string;
+    setPgn: React.Dispatch<React.SetStateAction<string>>;
+  };
+  navigation: {
+    onNextMove: () => void;
+    onPrevMove: () => void;
+    gotoMove: (move: number) => void;
+    onBeginning: () => void;
+    onEnd: () => void;
+  };
+  gameState: {
+    mainlineMoves: string[];
+    currentIndex: number;
+  };
+  actions: {
+    onImportPgn: (pgn: string) => void;
+  };
+};
 
 const Sidebar = ({
-  pgn,
-  setPgn,
-  onNextMove,
-  onPrevMove,
-  onImportPgn,
-  onBeginning,
-  onEnd,
-  mainlineMoves,
-  currentIndex,
-}: Props) => {
+  pgnState,
+  navigation,
+  gameState,
+  actions,
+}: SidebarProps) => {
+  const { pgn, setPgn } = pgnState;
+  const { onNextMove, onPrevMove, gotoMove, onBeginning, onEnd } = navigation;
+  const { mainlineMoves, currentIndex } = gameState;
+  const { onImportPgn } = actions;
+
   const rows = [];
   for (let i = 0; i < mainlineMoves.length; i += 2) {
     rows.push(mainlineMoves.slice(i, i + 2));
   }
+
   return (
     <div className={styles.sidebarContainer}>
       <>
@@ -84,7 +94,8 @@ const Sidebar = ({
                 return (
                   <td>
                     <button
-                      className={`${styles.movesButton} ${currentIndex === currentMove ? styles.currentMove : ""}`}
+                      className={`${styles.movesButton} ${currentIndex === currentMove + 1 ? styles.currentMove : ""}`}
+                      onClick={() => gotoMove(currentMove + 1)}
                     >
                       {move}
                     </button>

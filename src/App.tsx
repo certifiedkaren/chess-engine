@@ -49,6 +49,12 @@ const App = () => {
     setCurrentIndex(mainlineFens.length - 1);
   }
 
+  function gotoMove(move: number) {
+    if (move < mainlineMoves.length) {
+      setCurrentIndex(move);
+    }
+  }
+
   function nextMove() {
     if (currentIndex < mainlineMoves.length) {
       setCurrentIndex((i) => i + 1);
@@ -106,16 +112,26 @@ const App = () => {
         fen={mainlineFens[currentIndex]}
         onUserMove={handleUserMove}
       />
+
       <Sidebar
-        pgn={pgn}
-        setPgn={setPgn}
-        onNextMove={nextMove}
-        onPrevMove={prevMove}
-        onImportPgn={importPgn}
-        onBeginning={gotoBeginning}
-        onEnd={gotoEnd}
-        mainlineMoves={mainlineMoves}
-        currentIndex={currentIndex}
+        pgnState={{
+          pgn,
+          setPgn,
+        }}
+        navigation={{
+          onNextMove: nextMove,
+          onPrevMove: prevMove,
+          gotoMove,
+          onBeginning: gotoBeginning,
+          onEnd: gotoEnd,
+        }}
+        gameState={{
+          mainlineMoves,
+          currentIndex,
+        }}
+        actions={{
+          onImportPgn: importPgn,
+        }}
       />
     </div>
   );
