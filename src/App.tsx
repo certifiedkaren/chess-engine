@@ -1,17 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
 import "./App.css";
 
 const App = () => {
-  const chessGameRef = useRef(new Chess());
-  const chessGame = chessGameRef.current;
   const [mainlineMoves, setMainlineMoves] = useState<string[]>([]);
   const [mainlineFens, setMainlineFens] = useState<string[]>([
     new Chess().fen(),
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [branchStartIndex, setBranchStartIndex] = useState<number | null>(null);
   const [currentFen, setCurrentFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   );
@@ -80,6 +79,14 @@ const App = () => {
     }
   }
 
+  function returnToMainline() {
+    if (branchStartIndex !== null) {
+      setCurrentFen(mainlineFens[branchStartIndex]);
+      setBranchStartIndex(null);
+      setIsOnMainLine(true);
+    }
+  }
+
   function importPgn(pgn: string) {
     const temp = new Chess();
     try {
@@ -107,9 +114,11 @@ const App = () => {
     const game = new Chess(currentFen);
     try {
       game.move({ from, to, promotion: "q" });
+      if (isOnMainLine) {
+        setBranchStartIndex(currentIndex);
+      }
     } catch {
       console.log("invalid move");
-      console.log(`from: ${from}, to: ${to}`);
       return false;
     }
 
@@ -133,10 +142,12 @@ const App = () => {
           gotoMove,
           onBeginning: gotoBeginning,
           onEnd: gotoEnd,
+          returnToMainline: returnToMainline,
         }}
         gameState={{
           mainlineMoves,
           currentIndex,
+          branchStartIndex,
         }}
         actions={{
           onImportPgn: importPgn,

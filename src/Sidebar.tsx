@@ -11,10 +11,12 @@ type SidebarProps = {
     gotoMove: (move: number) => void;
     onBeginning: () => void;
     onEnd: () => void;
+    returnToMainline: () => void;
   };
   gameState: {
     mainlineMoves: string[];
     currentIndex: number;
+    branchStartIndex: number | null;
   };
   actions: {
     onImportPgn: (pgn: string) => void;
@@ -28,8 +30,15 @@ const Sidebar = ({
   actions,
 }: SidebarProps) => {
   const { pgn, setPgn } = pgnState;
-  const { onNextMove, onPrevMove, gotoMove, onBeginning, onEnd } = navigation;
-  const { mainlineMoves, currentIndex } = gameState;
+  const {
+    onNextMove,
+    onPrevMove,
+    gotoMove,
+    onBeginning,
+    onEnd,
+    returnToMainline,
+  } = navigation;
+  const { mainlineMoves, currentIndex, branchStartIndex } = gameState;
   const { onImportPgn } = actions;
 
   const rows = [];
@@ -109,6 +118,9 @@ const Sidebar = ({
           </tbody>
         </table>
       </div>
+      {branchStartIndex !== null && pgn !== "" && (
+        <button onClick={() => returnToMainline()}>return to mainline</button>
+      )}
     </div>
   );
 };
