@@ -12,7 +12,9 @@ const App = () => {
     new Chess().fen(),
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentFen, setCurrentFen] = useState("");
+  const [currentFen, setCurrentFen] = useState(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  );
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
 
@@ -43,29 +45,38 @@ const App = () => {
 
   function gotoBeginning() {
     setCurrentIndex(0);
+    setCurrentFen(mainlineFens[0]);
+    setIsOnMainLine(true);
   }
 
   function gotoEnd() {
-    setCurrentIndex(mainlineFens.length - 1);
+    const lastIndex = mainlineFens.length - 1;
+    setCurrentIndex(lastIndex);
+    setCurrentFen(mainlineFens[lastIndex]);
+    setIsOnMainLine(true);
   }
 
   function gotoMove(move: number) {
     if (move < mainlineMoves.length) {
       setCurrentIndex(move);
+      setCurrentFen(mainlineFens[move]);
+      setIsOnMainLine(true);
     }
   }
 
   function nextMove() {
     if (currentIndex < mainlineMoves.length) {
       setCurrentIndex((i) => i + 1);
-      setCurrentFen(chessGame.fen());
+      setCurrentFen(mainlineFens[currentIndex + 1]);
+      setIsOnMainLine(true);
     }
   }
 
   function prevMove() {
     if (currentIndex > 0) {
       setCurrentIndex((i) => i - 1);
-      setCurrentFen(chessGame.fen());
+      setCurrentFen(mainlineFens[currentIndex - 1]);
+      setIsOnMainLine(true);
     }
   }
 
@@ -98,6 +109,7 @@ const App = () => {
       game.move({ from, to, promotion: "q" });
     } catch {
       console.log("invalid move");
+      console.log(`from: ${from}, to: ${to}`);
       return false;
     }
 
@@ -108,10 +120,7 @@ const App = () => {
 
   return (
     <div className="container">
-      <ChessboardPanel
-        fen={mainlineFens[currentIndex]}
-        onUserMove={handleUserMove}
-      />
+      <ChessboardPanel fen={currentFen} onUserMove={handleUserMove} />
 
       <Sidebar
         pgnState={{

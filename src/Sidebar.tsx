@@ -86,25 +86,27 @@ const Sidebar = ({
       </div>
       <div className={styles.movesContainer}>
         <table className={styles.movesTable}>
-          {rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              <td className={styles.movesNumber}>{rowIndex + 1}</td>
-              {row.map((move, moveIndex) => {
-                const currentMove = rowIndex * 2 + moveIndex;
-                return (
-                  <td>
-                    <button
-                      className={`${styles.movesButton} ${currentIndex === currentMove + 1 ? styles.currentMove : ""}`}
-                      onClick={() => gotoMove(currentMove + 1)}
-                    >
-                      {move}
-                    </button>
-                  </td>
-                );
-              })}
-              {row.length === 1 && <td />}
-            </tr>
-          ))}
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                <td className={styles.movesNumber}>{rowIndex + 1}</td>
+                {row.map((move, moveIndex) => {
+                  const currentMove = rowIndex * 2 + moveIndex;
+                  return (
+                    <td key={currentMove}>
+                      <button
+                        className={`${styles.movesButton} ${currentIndex === currentMove + 1 ? styles.currentMove : ""}`}
+                        onClick={() => gotoMove(currentMove + 1)}
+                      >
+                        {move}
+                      </button>
+                    </td>
+                  );
+                })}
+                {row.length === 1 && <td key={`empty-${rowIndex}`} />}
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>
