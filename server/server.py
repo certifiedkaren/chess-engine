@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import engine
 
@@ -8,6 +9,15 @@ class AnalyzeRequest(BaseModel):
   num_results : int = Field(default=3, ge=1, le=5, description="Number of top moves to return")
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.post("/analyze")
 async def analyze(data: AnalyzeRequest):
   if not data.fen.strip():
@@ -15,7 +25,8 @@ async def analyze(data: AnalyzeRequest):
   if data.depth > 25:
     raise HTTPException(status_code=400, detail="enter a valid depth")
   try:
-    best_moves = engine.get_best_moves(fen=data.fen, depth=data.depth, num_results=data.num_results)
-    return {"moves": best_moves}
+    engine_response = engine.get_best_moves(fen=data.fen, depth=data.depth, num_results=data.num_results)
+    best_moves = [response["Move"] for response in engine_response]
+    return {"best_moves": best_moves}
   except ValueError as e:
     raise HTTPException(status_code=400, detail=str(e))
