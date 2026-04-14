@@ -16,7 +16,7 @@ type SidebarProps = {
   gameState: {
     mainlineMoves: string[];
     currentIndex: number;
-    branchStartIndex: number | null;
+    onMainLine: boolean;
   };
   actions: {
     onImportPgn: (pgn: string) => void;
@@ -38,7 +38,7 @@ const Sidebar = ({
     onEnd,
     returnToMainline,
   } = navigation;
-  const { mainlineMoves, currentIndex, branchStartIndex } = gameState;
+  const { mainlineMoves, currentIndex, onMainLine } = gameState;
   const { onImportPgn } = actions;
 
   const rows = [];
@@ -118,7 +118,7 @@ const Sidebar = ({
           </tbody>
         </table>
       </div>
-      {branchStartIndex !== null && pgn !== "" && (
+      {!onMainLine && pgn.trim() !== "" && (
         <button onClick={() => returnToMainline()}>return to mainline</button>
       )}
     </div>

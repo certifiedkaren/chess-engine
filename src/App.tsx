@@ -11,6 +11,10 @@ const App = () => {
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [branchStartIndex, setBranchStartIndex] = useState<number | null>(null);
+  const [currentBranchIndex, setCurrentBranchIndex] = useState<number | null>(
+    null,
+  );
+  const [branchFens, setBranchFens] = useState<string[]>([]);
   const [currentFen, setCurrentFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   );
@@ -45,6 +49,12 @@ const App = () => {
   function gotoBeginning() {
     setCurrentIndex(0);
     setCurrentFen(mainlineFens[0]);
+
+    if (!isOnMainLine) {
+      setBranchStartIndex(null);
+      setCurrentBranchIndex(null);
+      setBranchFens([]);
+    }
     setIsOnMainLine(true);
   }
 
@@ -52,30 +62,67 @@ const App = () => {
     const lastIndex = mainlineFens.length - 1;
     setCurrentIndex(lastIndex);
     setCurrentFen(mainlineFens[lastIndex]);
+
+    if (!isOnMainLine) {
+      setBranchStartIndex(null);
+      setCurrentBranchIndex(null);
+      setBranchFens([]);
+    }
     setIsOnMainLine(true);
   }
 
   function gotoMove(move: number) {
-    if (move < mainlineMoves.length) {
-      setCurrentIndex(move);
-      setCurrentFen(mainlineFens[move]);
-      setIsOnMainLine(true);
+    if (isOnMainLine) {
+      if (move >= 0 && move < mainlineFens.length) {
+        setCurrentIndex(move);
+        setCurrentFen(mainlineFens[move]);
+      }
+    } else {
+      if (move >= 0 && move < branchFens.length) {
+        setCurrentBranchIndex(move);
+        setCurrentFen(branchFens[move]);
+      }
     }
   }
 
   function nextMove() {
-    if (currentIndex < mainlineMoves.length) {
-      setCurrentIndex((i) => i + 1);
-      setCurrentFen(mainlineFens[currentIndex + 1]);
-      setIsOnMainLine(true);
+    if (isOnMainLine) {
+      if (currentIndex < mainlineMoves.length) {
+        const nextIndex = currentIndex + 1;
+        setCurrentIndex(nextIndex);
+        setCurrentFen(mainlineFens[nextIndex]);
+      }
+    } else {
+      if (currentBranchIndex === null) return;
+
+      if (currentBranchIndex < branchFens.length) {
+        const nextIndex = currentBranchIndex + 1;
+        setCurrentBranchIndex(nextIndex);
+        setCurrentFen(branchFens[nextIndex]);
+      }
     }
   }
 
   function prevMove() {
-    if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1);
-      setCurrentFen(mainlineFens[currentIndex - 1]);
-      setIsOnMainLine(true);
+    if (isOnMainLine) {
+      if (currentIndex > 0) {
+        const prevIndex = currentIndex - 1;
+        setCurrentIndex(prevIndex);
+        setCurrentFen(mainlineFens[prevIndex]);
+      }
+    } else {
+      if (currentBranchIndex === null) return;
+
+      if (currentBranchIndex > 0) {
+        const prevIndex = currentBranchIndex - 1;
+        setCurrentBranchIndex(prevIndex);
+        setCurrentFen(branchFens[prevIndex]);
+      } else if (branchStartIndex !== null) {
+        setIsOnMainLine(true);
+        setCurrentIndex(branchStartIndex);
+        setCurrentFen(mainlineFens[branchStartIndex]);
+        setCurrentBranchIndex(null);
+      }
     }
   }
 
@@ -83,6 +130,8 @@ const App = () => {
     if (branchStartIndex !== null) {
       setCurrentFen(mainlineFens[branchStartIndex]);
       setBranchStartIndex(null);
+      setCurrentBranchIndex(null);
+      setBranchFens([]);
       setIsOnMainLine(true);
     }
   }
@@ -116,6 +165,11 @@ const App = () => {
       game.move({ from, to, promotion: "q" });
       if (isOnMainLine) {
         setBranchStartIndex(currentIndex);
+        setBranchFens([currentFen, game.fen()]);
+        setCurrentBranchIndex(1);
+      } else {
+        setBranchFens((prev) => [...prev, game.fen()]);
+        setCurrentBranchIndex((i) => (i === null ? 1 : i + 1));
       }
     } catch {
       console.log("invalid move");
@@ -145,9 +199,9 @@ const App = () => {
           returnToMainline: returnToMainline,
         }}
         gameState={{
-          mainlineMoves,
-          currentIndex,
-          branchStartIndex,
+          mainlineMoves: mainlineMoves,
+          currentIndex: currentIndex,
+          onMainLine: isOnMainLine,
         }}
         actions={{
           onImportPgn: importPgn,
