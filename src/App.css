@@ -8,3 +8,9 @@
 [id^="click-or-drag-to-move-square"] span span {
   font-size: 24px !important;
 }
+
+.AnalyzeSidebarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

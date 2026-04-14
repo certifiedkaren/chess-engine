@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
+import Analyze from "./Analyze";
+import { analyzePosition } from "./api";
 import "./App.css";
 
 const App = () => {
@@ -20,6 +22,7 @@ const App = () => {
   );
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
+  const [bestMoves, setBestMoves] = useState<string[]>([]);
 
   (useEffect(() => {
     function handleKeypress(e: KeyboardEvent) {
@@ -190,32 +193,43 @@ const App = () => {
     return true;
   }
 
+  async function handleAnalyze(): Promise<void> {
+    try {
+      const response = await analyzePosition(currentFen);
+      setBestMoves(response.best_moves);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <div className="container">
       <ChessboardPanel fen={currentFen} onUserMove={handleUserMove} />
-
-      <Sidebar
-        pgnState={{
-          pgn,
-          setPgn,
-        }}
-        navigation={{
-          onNextMove: nextMove,
-          onPrevMove: prevMove,
-          gotoMove,
-          onBeginning: gotoBeginning,
-          onEnd: gotoEnd,
-          returnToMainline: returnToMainline,
-        }}
-        gameState={{
-          mainlineMoves: mainlineMoves,
-          currentIndex: currentIndex,
-          onMainLine: isOnMainLine,
-        }}
-        actions={{
-          onImportPgn: importPgn,
-        }}
-      />
+      <div>
+        <Sidebar
+          pgnState={{
+            pgn,
+            setPgn,
+          }}
+          navigation={{
+            onNextMove: nextMove,
+            onPrevMove: prevMove,
+            gotoMove,
+            onBeginning: gotoBeginning,
+            onEnd: gotoEnd,
+            returnToMainline: returnToMainline,
+          }}
+          gameState={{
+            mainlineMoves: mainlineMoves,
+            currentIndex: currentIndex,
+            onMainLine: isOnMainLine,
+          }}
+          actions={{
+            onImportPgn: importPgn,
+          }}
+        />
+        <Analyze bestMoves={bestMoves} onAnalyze={handleAnalyze} />
+      </div>
     </div>
   );
 };
