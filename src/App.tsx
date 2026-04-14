@@ -168,7 +168,16 @@ const App = () => {
         setBranchFens([currentFen, game.fen()]);
         setCurrentBranchIndex(1);
       } else {
-        setBranchFens((prev) => [...prev, game.fen()]);
+        if (currentBranchIndex === null) {
+          setCurrentBranchIndex(1);
+          return false;
+        }
+
+        setBranchFens((prev) => [
+          ...prev.slice(0, currentBranchIndex + 1),
+          game.fen(),
+        ]);
+
         setCurrentBranchIndex((i) => (i === null ? 1 : i + 1));
       }
     } catch {
