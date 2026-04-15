@@ -196,7 +196,9 @@ const App = () => {
   async function handleAnalyze(): Promise<void> {
     try {
       const response = await analyzePosition(currentFen);
-      setBestMoves(response.best_moves);
+      console.log(`best moves: ${response.best_moves}`);
+      console.log(`san: ${response.best_moves[0].san}`);
+      setBestMoves(response.best_moves.map((move) => move.san));
     } catch (error) {
       console.error(error);
     }

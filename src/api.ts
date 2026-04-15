@@ -1,5 +1,12 @@
+export type BestMove = {
+  uci: string;
+  san: string;
+  centipawn: number | null;
+  mate: number | null;
+};
+
 export type AnalyzeResponse = {
-  best_moves: string[];
+  best_moves: BestMove[];
   fen: string;
 };
 

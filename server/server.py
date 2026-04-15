@@ -26,7 +26,6 @@ async def analyze(data: AnalyzeRequest):
     raise HTTPException(status_code=400, detail="enter a valid depth")
   try:
     engine_response = engine.get_best_moves(fen=data.fen, depth=data.depth, num_results=data.num_results)
-    best_moves = [response["Move"] for response in engine_response]
-    return {"best_moves": best_moves}
+    return {"best_moves": engine_response}
   except ValueError as e:
     raise HTTPException(status_code=400, detail=str(e))
