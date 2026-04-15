@@ -1,0 +1,6 @@
+fastapi
+pydantic
+chess
+stockfish
+python-dotenv
+uvicorn
