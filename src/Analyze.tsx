@@ -1,17 +1,19 @@
 interface AnalyzeProps {
-  bestMoves: string[];
-  onAnalyze: () => Promise<void>;
+  bestMoves: string[][];
+  currentIndex: number;
+  onAnalyze: () => Promise<string[] | void>;
 }
 
 const Analyze = ({
   onAnalyze: onAnalyze,
+  currentIndex: currentIndex,
   bestMoves: bestMoves,
 }: AnalyzeProps) => {
   return (
     <>
-      <button onClick={() => onAnalyze()}>Analyze</button>
+      {/* <button onClick={() => onAnalyze()}>Analyze</button> */}
       <p style={{ color: "white" }}>
-        {bestMoves.length > 0 ? bestMoves.join(" ") : null}
+        {bestMoves[currentIndex] ? bestMoves[currentIndex].join(" ") : null}
       </p>
     </>
   );

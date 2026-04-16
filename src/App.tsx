@@ -23,6 +23,7 @@ const App = () => {
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
   const [bestMoves, setBestMoves] = useState<string[]>([]);
+  const [bestMovesArr, setBestMovesArr] = useState<string[][]>([]);
 
   (useEffect(() => {
     function handleKeypress(e: KeyboardEvent) {
@@ -139,7 +140,7 @@ const App = () => {
     }
   }
 
-  function importPgn(pgn: string) {
+  async function importPgn(pgn: string) {
     const temp = new Chess();
     try {
       temp.loadPgn(pgn);
@@ -152,10 +153,23 @@ const App = () => {
     const replay = new Chess();
     const fens: string[] = [replay.fen()];
 
+    const tempBestMoves: string[][] = [];
+
+    const tempBestMove = await analyzeFen(replay.fen());
+    if (tempBestMove !== undefined) {
+      tempBestMoves.push(tempBestMove);
+    }
+
     for (const move of history) {
       replay.move(move);
       fens.push(replay.fen());
+      const tempBestMove = await analyzeFen(replay.fen());
+      if (tempBestMove !== undefined) {
+        tempBestMoves.push(tempBestMove);
+      }
     }
+
+    setBestMovesArr(tempBestMoves);
 
     setMainlineMoves(history);
     setMainlineFens(fens);
@@ -193,6 +207,17 @@ const App = () => {
     return true;
   }
 
+  async function analyzeFen(fen: string): Promise<string[] | undefined> {
+    try {
+      const response = (await analyzePosition(fen)).best_moves.map(
+        (move) => move.san,
+      );
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async function handleAnalyze(): Promise<void> {
     try {
       const response = await analyzePosition(currentFen);
@@ -228,7 +253,11 @@ const App = () => {
             onImportPgn: importPgn,
           }}
         />
-        <Analyze bestMoves={bestMoves} onAnalyze={handleAnalyze} />
+        <Analyze
+          bestMoves={bestMovesArr}
+          currentIndex={currentIndex}
+          onAnalyze={handleAnalyze}
+        />
       </div>
     </div>
   );
