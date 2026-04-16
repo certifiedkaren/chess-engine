@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 @app.post("/analyze")
-async def analyze(data: AnalyzeRequest):
+def analyze(data: AnalyzeRequest):
   if not data.fen.strip():
     raise HTTPException(status_code=400, detail="no fen received")
   if data.depth > 25:

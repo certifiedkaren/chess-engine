@@ -9,7 +9,14 @@ stockfish_path = os.getenv("STOCKFISH_PATH")
 if stockfish_path is None:
   raise ValueError("stockfish path is not set")
 
-stockfish = Stockfish(path=stockfish_path)
+stockfish = Stockfish(
+    path=stockfish_path,
+    parameters={
+        "Threads": 4,
+        "Hash": 256,
+    }
+)
+print(stockfish.get_engine_parameters())
 
 def get_best_moves(fen: str, depth: int, num_results : int = 3):
   if (not stockfish.is_fen_valid(fen)):
@@ -26,7 +33,7 @@ def get_best_moves(fen: str, depth: int, num_results : int = 3):
     if isinstance(move, str):
       uci_move = chess.Move.from_uci(move)
       result.append({
-        "uci": uci_move,
+        "uci": move,
         "san": board.san(uci_move),
         "centipawn": move_info["Centipawn"],
         "mate": move_info["Mate"]
