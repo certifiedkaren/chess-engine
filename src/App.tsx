@@ -25,6 +25,11 @@ const App = () => {
   const [bestMoves, setBestMoves] = useState<string[]>([]);
   const [bestMovesArr, setBestMovesArr] = useState<string[][]>([]);
 
+  const [whiteUsername, setWhiteUsername] = useState("White");
+  const [whiteElo, setWhiteElo] = useState<number>();
+  const [blackUsername, setBlackUsername] = useState("Black");
+  const [blackElo, setBlackElo] = useState<number>();
+
   (useEffect(() => {
     function handleKeypress(e: KeyboardEvent) {
       if (
@@ -140,6 +145,28 @@ const App = () => {
     }
   }
 
+  function getUsernameAndElo(pgn: string) {
+    const whiteUsernameMatch = pgn.match(/\[White "([^"]+)"\]/)?.[1];
+    if (whiteUsernameMatch !== undefined) {
+      setWhiteUsername(whiteUsernameMatch);
+    }
+
+    const blackUsernameMatch = pgn.match(/\[Black "([^"]+)"\]/)?.[1];
+    if (blackUsernameMatch !== undefined) {
+      setBlackUsername(blackUsernameMatch);
+    }
+
+    const whiteEloMatch = pgn.match(/\[WhiteElo "([^"]+)"\]/)?.[1];
+    if (whiteEloMatch !== undefined && /^\d+$/.test(whiteEloMatch)) {
+      setWhiteElo(Number(whiteEloMatch));
+    }
+
+    const blackEloMatch = pgn.match(/\[BlackElo "([^"]+)"\]/)?.[1];
+    if (blackEloMatch !== undefined && /^\d+$/.test(blackEloMatch)) {
+      setBlackElo(Number(blackEloMatch));
+    }
+  }
+
   async function importPgn(pgn: string) {
     const temp = new Chess();
     try {
@@ -148,6 +175,8 @@ const App = () => {
       console.log("invalid pgn");
       return;
     }
+
+    getUsernameAndElo(pgn);
 
     const history = temp.history();
     const replay = new Chess();
@@ -229,7 +258,16 @@ const App = () => {
 
   return (
     <div className="container">
-      <ChessboardPanel fen={currentFen} onUserMove={handleUserMove} />
+      <ChessboardPanel
+        fen={currentFen}
+        onUserMove={handleUserMove}
+        playerInfo={{
+          whiteUsername: whiteUsername,
+          blackUsername: blackUsername,
+          whiteElo: whiteElo,
+          blackElo: blackElo,
+        }}
+      />
       <div>
         <Sidebar
           pgnState={{

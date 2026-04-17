@@ -1,20 +1,26 @@
 .chessboardContainer {
-  width: 50vw;
+  width: 48vw;
   margin-left: 15vw;
 }
 
-/* make it so that there is a popup with checkmate */
-/* .box1 {
-  position: relative;
-  z-index: 2;
-  width: 200px;
-  height: 200px;
-  background: gray;
-} */
+.playerContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
-/* .box2 {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1;
-} */
+  width: 200px;
+  padding: 8px 12px;
+  background-color: #2a2a2a;
+  color: white;
+  border-radius: 8px;
+}
+
+.playerContainer img {
+  width: 42px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.playerText {
+  overflow-wrap: break-word;
+}

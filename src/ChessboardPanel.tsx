@@ -7,12 +7,19 @@ import {
   type SquareHandlerArgs,
 } from "react-chessboard";
 
-interface Props {
+type Props = {
   fen: string;
   onUserMove: (from: string, to: string) => boolean;
-}
+  playerInfo: {
+    whiteUsername: string;
+    blackUsername: string;
+    whiteElo: number | undefined;
+    blackElo: number | undefined;
+  };
+};
 
-function ChessboardPanel({ fen, onUserMove }: Props) {
+function ChessboardPanel({ fen, onUserMove, playerInfo }: Props) {
+  const { whiteUsername, blackUsername, whiteElo, blackElo } = playerInfo;
   const chessGame = new Chess(fen);
   const [moveFrom, setMoveFrom] = useState("");
   const [optionSquares, setOptionSquares] = useState({});
@@ -112,15 +119,26 @@ function ChessboardPanel({ fen, onUserMove }: Props) {
     id: "click-or-drag-to-move",
   };
 
-  const result = gameOver();
-
   return (
     <div className={styles.chessboardContainer}>
-      <div className="box1">
-        {typeof result == "string" && <h1>{result}</h1>}
+      <div className={styles.playerContainer}>
+        <img src="src/assets/chess_black_king.png" alt="chess king piece" />
+        <span className={styles.playerText}>
+          {blackUsername}
+          {blackElo !== undefined ? ` (${blackElo})` : ""}
+        </span>
       </div>
-      <div className="box2">
+
+      <div>
         <Chessboard options={chessboardOptions} />
+      </div>
+
+      <div className={styles.playerContainer}>
+        <img src="src/assets/chess_white_king.png" alt="chess king piece" />
+        <span className={styles.playerText}>
+          {whiteUsername}
+          {whiteElo !== undefined ? ` (${whiteElo})` : ""}
+        </span>
       </div>
     </div>
   );

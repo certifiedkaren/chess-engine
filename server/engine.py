@@ -16,7 +16,6 @@ stockfish = Stockfish(
         "Hash": 256,
     }
 )
-print(stockfish.get_engine_parameters())
 
 def get_best_moves(fen: str, depth: int, num_results : int = 3):
   if (not stockfish.is_fen_valid(fen)):
