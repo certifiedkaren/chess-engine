@@ -10,15 +10,35 @@ export type AnalyzeResponse = {
   fen: string;
 };
 
-export async function analyzePosition(fen: string): Promise<AnalyzeResponse> {
+export type AnalyzeBatchResponse = {
+  best_moves: (BestMove[] | null)[];
+};
+
+export async function analyzePosition(fen: string, depth=15, numResults=3): Promise<AnalyzeResponse> {
   const response = await fetch("http://127.0.0.1:8000/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fen }),
+    body: JSON.stringify({ fen, depth, num_results: numResults }),
   });
   if (!response.ok) {
     throw new Error(`Reponse Status ${response.status}`);
   }
 
-  return response.json();
+  const data: AnalyzeResponse = await response.json();
+  return data;
+}
+
+
+export async function analyzeFenBatch(fens: string[], depth=15, numResults=3): Promise<AnalyzeBatchResponse> {
+  const response = await fetch("http://127.0.0.1:8000/batch-analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fens, depth, num_results: numResults }),
+  });
+  if (!response.ok) {
+    throw new Error(`Reponse Status ${response.status}`);
+  }
+
+  const data: AnalyzeBatchResponse = await response.json();
+  return data;
 }

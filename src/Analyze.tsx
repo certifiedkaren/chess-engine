@@ -1,5 +1,5 @@
 interface AnalyzeProps {
-  bestMoves: string[][];
+  bestMoves: (string[] | null)[];
   currentIndex: number;
   onAnalyze: () => Promise<string[] | void>;
 }

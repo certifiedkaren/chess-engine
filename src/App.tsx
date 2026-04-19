@@ -3,7 +3,7 @@ import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
 import Analyze from "./Analyze";
-import { analyzePosition } from "./api";
+import { analyzePosition, analyzeFenBatch } from "./api";
 import "./App.css";
 
 const App = () => {
@@ -23,7 +23,7 @@ const App = () => {
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
   const [bestMoves, setBestMoves] = useState<string[]>([]);
-  const [bestMovesArr, setBestMovesArr] = useState<string[][]>([]);
+  const [bestMovesArr, setBestMovesArr] = useState<(string[] | null)[]>([]);
 
   const [whiteUsername, setWhiteUsername] = useState("White");
   const [whiteElo, setWhiteElo] = useState<number>();
@@ -167,6 +167,37 @@ const App = () => {
     }
   }
 
+  async function analyzeRemainingMoves(
+    startIndex: number,
+    fens: string[],
+    chunkSize = 3,
+  ) {
+    try {
+      for (let i = startIndex; i < fens.length; i += chunkSize) {
+        const chunk = fens.slice(i, i + chunkSize);
+
+        const results = await analyzeFens(chunk);
+
+        if (results === null) {
+          return null;
+        }
+
+        setBestMovesArr((prev) => {
+          const copy = [...prev];
+
+          results.forEach((result, j) => {
+            if (result !== null) {
+              copy[i + j] = result;
+            }
+          });
+          return copy;
+        });
+      }
+    } catch (error) {
+      console.error("background analysis failed:", error);
+    }
+  }
+
   async function importPgn(pgn: string) {
     const temp = new Chess();
     try {
@@ -182,27 +213,37 @@ const App = () => {
     const replay = new Chess();
     const fens: string[] = [replay.fen()];
 
-    const tempBestMoves: string[][] = [];
-
-    const tempBestMove = await analyzeFen(replay.fen());
-    if (tempBestMove !== undefined) {
-      tempBestMoves.push(tempBestMove);
-    }
-
     for (const move of history) {
       replay.move(move);
       fens.push(replay.fen());
-      const tempBestMove = await analyzeFen(replay.fen());
-      if (tempBestMove !== undefined) {
-        tempBestMoves.push(tempBestMove);
-      }
     }
 
-    setBestMovesArr(tempBestMoves);
+    const tempBestMoves: (string[] | null)[] = new Array(fens.length).fill(
+      null,
+    );
 
+    const firstBranchSize = Math.min(5, fens.length);
+    const chunk = fens.slice(0, firstBranchSize);
+
+    const results = await analyzeFens(chunk);
+    if (results === null) {
+      return;
+    }
+    console.log(`results: ${results}`);
+
+    results.forEach((result, i) => {
+      if (result !== null) {
+        tempBestMoves[i] = result;
+        console.log(result);
+      }
+    });
+
+    setBestMovesArr(tempBestMoves);
     setMainlineMoves(history);
     setMainlineFens(fens);
     setCurrentIndex(0);
+
+    void analyzeRemainingMoves(firstBranchSize, fens);
   }
 
   function handleUserMove(from: string, to: string): boolean {
@@ -246,6 +287,27 @@ const App = () => {
       console.error(error);
     }
   }
+
+ async function analyzeFens(
+  fens: string[],
+  depth = 15,
+  numResults = 3
+): Promise<(string[] | null)[]> {
+  try {
+    const response = await analyzeFenBatch(fens, depth, numResults);
+    console.log(response);
+
+    return response.best_moves.map((moves) => {
+      if (moves === null) {
+        return null;
+      }
+      return moves.map((move) => move.san);
+    });
+  } catch (error) {
+    console.error(error);
+    return fens.map(() => null);
+  }
+} 
 
   async function handleAnalyze(): Promise<void> {
     try {

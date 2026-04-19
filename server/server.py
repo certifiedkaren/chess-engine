@@ -1,14 +1,32 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from typing import List
+from starlette.concurrency import run_in_threadpool
 import engine
+import asyncio
+
 
 class AnalyzeRequest(BaseModel):
-  fen : str = Field(description="FEN string for current chess position")
-  depth : int = Field(default=15, ge=1, le=25, description="Search depth for engine")
-  num_results : int = Field(default=3, ge=1, le=5, description="Number of top moves to return")
+    fen: str = Field(description="FEN string for current chess position")
+    depth: int = Field(default=15, ge=1, le=25,
+                       description="Search depth for engine")
+    num_results: int = Field(default=3, ge=1, le=5,
+                             description="Number of top moves to return")
+
+
+class AnalyzeBatchRequest(BaseModel):
+    fens: List[str] = Field(
+        description="List of FEN strings for chess positions")
+    depth: int = Field(default=15, ge=1, le=25,
+                       description="Search depth for engine")
+    num_results: int = Field(default=3, ge=1, le=5,
+                             description="Number of top moves to return")
+
 
 app = FastAPI()
+
+engine_lock = asyncio.Lock()
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,14 +36,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/analyze")
-def analyze(data: AnalyzeRequest):
-  if not data.fen.strip():
-    raise HTTPException(status_code=400, detail="no fen received")
-  if data.depth > 25:
-    raise HTTPException(status_code=400, detail="enter a valid depth")
-  try:
-    engine_response = engine.get_best_moves(fen=data.fen, depth=data.depth, num_results=data.num_results)
-    return {"best_moves": engine_response}
-  except ValueError as e:
-    raise HTTPException(status_code=400, detail=str(e))
+async def analyze(data: AnalyzeRequest):
+    try:
+        async with engine_lock:
+            engine_response = await run_in_threadpool(
+                engine.get_best_moves,
+                fen=data.fen,
+                depth=data.depth,
+                num_results=data.num_results)
+        return {"best_moves": engine_response}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/batch-analyze")
+async def batch_analyze(data: AnalyzeBatchRequest):
+    if not data.fens:
+        raise HTTPException(status_code=400, detail="no fens recieved")
+    if len(data.fens) > 50:
+        raise HTTPException(
+            status_code=400, detail="batch size larger than 50")
+    try:
+        engine_best_moves = []
+        async with engine_lock:
+            for current_fen in data.fens:
+                engine_response = await run_in_threadpool(
+                    engine.get_best_moves,
+                    fen=current_fen,
+                    depth=data.depth,
+                    num_results=data.num_results)
+                engine_best_moves.append(engine_response)
+        return {"best_moves": engine_best_moves}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
