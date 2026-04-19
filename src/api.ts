@@ -1,18 +1,18 @@
-export type BestMove = {
+export type EngineMove = {
   uci: string;
   san: string;
   centipawn: number | null;
   mate: number | null;
-};
-
+}
 export type AnalyzeResponse = {
-  best_moves: BestMove[];
+  best_moves: EngineMove[];
   fen: string;
 };
 
 export type AnalyzeBatchResponse = {
-  best_moves: (BestMove[] | null)[];
+  best_moves: (EngineMove[] | null)[];
 };
+
 
 export async function analyzePosition(fen: string, depth=15, numResults=3): Promise<AnalyzeResponse> {
   const response = await fetch("http://127.0.0.1:8000/analyze", {

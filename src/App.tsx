@@ -3,8 +3,9 @@ import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
 import Analyze from "./Analyze";
-import { analyzePosition, analyzeFenBatch } from "./api";
+import { analyzePosition, analyzeFenBatch, type EngineMove } from "./api";
 import "./App.css";
+
 
 const App = () => {
   const [mainlineMoves, setMainlineMoves] = useState<string[]>([]);
@@ -22,8 +23,8 @@ const App = () => {
   );
   const [isOnMainLine, setIsOnMainLine] = useState(true);
   const [pgn, setPgn] = useState("");
-  const [bestMoves, setBestMoves] = useState<string[]>([]);
-  const [bestMovesArr, setBestMovesArr] = useState<(string[] | null)[]>([]);
+  const [bestMoves, setBestMoves] = useState<EngineMove[]>([]);
+  const [bestMovesArr, setBestMovesArr] = useState<(EngineMove[] | null)[]>([]);
 
   const [whiteUsername, setWhiteUsername] = useState("White");
   const [whiteElo, setWhiteElo] = useState<number>();
@@ -175,9 +176,8 @@ const App = () => {
     try {
       for (let i = startIndex; i < fens.length; i += chunkSize) {
         const chunk = fens.slice(i, i + chunkSize);
-
+        
         const results = await analyzeFens(chunk);
-
         if (results === null) {
           return null;
         }
@@ -218,7 +218,7 @@ const App = () => {
       fens.push(replay.fen());
     }
 
-    const tempBestMoves: (string[] | null)[] = new Array(fens.length).fill(
+    const tempBestMoves: (EngineMove[] | null)[] = new Array(fens.length).fill(
       null,
     );
 
@@ -229,12 +229,10 @@ const App = () => {
     if (results === null) {
       return;
     }
-    console.log(`results: ${results}`);
 
     results.forEach((result, i) => {
       if (result !== null) {
         tempBestMoves[i] = result;
-        console.log(result);
       }
     });
 
@@ -277,12 +275,10 @@ const App = () => {
     return true;
   }
 
-  async function analyzeFen(fen: string): Promise<string[] | undefined> {
+  async function analyzeFen(fen: string): Promise<EngineMove[] | undefined> {
     try {
-      const response = (await analyzePosition(fen)).best_moves.map(
-        (move) => move.san,
-      );
-      return response;
+      const response = await analyzePosition(fen);
+      return response.best_moves;
     } catch (error) {
       console.error(error);
     }
@@ -292,17 +288,10 @@ const App = () => {
   fens: string[],
   depth = 15,
   numResults = 3
-): Promise<(string[] | null)[]> {
+): Promise<(EngineMove[] | null)[]> {
   try {
     const response = await analyzeFenBatch(fens, depth, numResults);
-    console.log(response);
-
-    return response.best_moves.map((moves) => {
-      if (moves === null) {
-        return null;
-      }
-      return moves.map((move) => move.san);
-    });
+    return response.best_moves
   } catch (error) {
     console.error(error);
     return fens.map(() => null);
@@ -312,7 +301,7 @@ const App = () => {
   async function handleAnalyze(): Promise<void> {
     try {
       const response = await analyzePosition(currentFen);
-      setBestMoves(response.best_moves.map((move) => move.san));
+      setBestMoves(response.best_moves);
     } catch (error) {
       console.error(error);
     }

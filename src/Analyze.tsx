@@ -1,5 +1,6 @@
+import { type EngineMove } from "./api";
 interface AnalyzeProps {
-  bestMoves: (string[] | null)[];
+  bestMoves: (EngineMove[] | null)[];
   currentIndex: number;
   onAnalyze: () => Promise<string[] | void>;
 }
@@ -13,8 +14,12 @@ const Analyze = ({
     <>
       {/* <button onClick={() => onAnalyze()}>Analyze</button> */}
       <p style={{ color: "white" }}>
-        {bestMoves[currentIndex] ? bestMoves[currentIndex].join(" ") : null}
+        {bestMoves[currentIndex]?.map((move) => move.san).join(" ") ?? null}
       </p>
+      <p style={{ color: "white" }}>
+        {bestMoves[currentIndex]?.map((move) => move.centipawn).join(" ") ?? null}
+      </p>
+
     </>
   );
 };
