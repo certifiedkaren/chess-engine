@@ -41,5 +41,12 @@ def get_best_moves(fen: str, depth: int, num_results: int = 3):
 
     return result
 
-# check whose move it is and then when it returns centipawn: xxx
-# it will be that side which is doing better
+
+def evaluate_position(fen: str, depth: int):
+    if (not stockfish.is_fen_valid(fen)):
+        raise ValueError("fen is not valid")
+    stockfish.set_fen_position(fen)
+    stockfish.set_depth(depth)
+
+    evaluation = stockfish.get_evaluation()
+    return evaluation

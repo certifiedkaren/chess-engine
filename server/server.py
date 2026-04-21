@@ -24,6 +24,13 @@ class AnalyzeBatchRequest(BaseModel):
                              description="Number of top moves to return")
 
 
+class EvaluateMovesRequest(BaseModel):
+    fens: List[str] = Field(
+        description="List of FEN strings for chess positions")
+    depth: int = Field(default=15, ge=1, le=25,
+                       description="Search depth for engine")
+
+
 app = FastAPI()
 
 engine_lock = asyncio.Lock()
@@ -69,5 +76,24 @@ async def batch_analyze(data: AnalyzeBatchRequest):
                     num_results=data.num_results)
                 engine_best_moves.append(engine_response)
         return {"best_moves": engine_best_moves}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/evaluate-moves")
+async def evaluate_moves(data: EvaluateMovesRequest):
+    if not data.fens:
+        raise HTTPException(status_code=400, detail="no fens recieved")
+    try:
+        engine_evaluations = []
+        async with engine_lock:
+            for current_fen in data.fens:
+                engine_response = await run_in_threadpool(
+                    engine.evaluate_position,
+                    fen=current_fen,
+                    depth=data.depth,
+                )
+                engine_evaluations.append(engine_response)
+        return {"move_evaluations": engine_evaluations}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

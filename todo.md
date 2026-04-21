@@ -1,0 +1,5 @@
+- make the evaluation always in terms of white
+- make a bar to show the evaluation
+- better styling for the analysis
+- divide the analysis by 100 for each item
+- add loading bar while its generating the analysis array

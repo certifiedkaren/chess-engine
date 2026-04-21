@@ -3,9 +3,15 @@ import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
 import Analyze from "./Analyze";
-import { analyzePosition, analyzeFenBatch, type EngineMove } from "./api";
+import EvaluationBar from "./EvaluationBar";
+import {
+  analyzePosition,
+  analyzeFenBatch,
+  type EngineMove,
+  evaluateFensBatch,
+  type EngineEvaluation,
+} from "./api";
 import "./App.css";
-
 
 const App = () => {
   const [mainlineMoves, setMainlineMoves] = useState<string[]>([]);
@@ -25,6 +31,9 @@ const App = () => {
   const [pgn, setPgn] = useState("");
   const [bestMoves, setBestMoves] = useState<EngineMove[]>([]);
   const [bestMovesArr, setBestMovesArr] = useState<(EngineMove[] | null)[]>([]);
+  const [playedMovesEval, setPlayedMovesEval] = useState<
+    (EngineEvaluation | null)[]
+  >([]);
 
   const [whiteUsername, setWhiteUsername] = useState("White");
   const [whiteElo, setWhiteElo] = useState<number>();
@@ -176,7 +185,7 @@ const App = () => {
     try {
       for (let i = startIndex; i < fens.length; i += chunkSize) {
         const chunk = fens.slice(i, i + chunkSize);
-        
+
         const results = await analyzeFens(chunk);
         if (results === null) {
           return null;
@@ -222,15 +231,32 @@ const App = () => {
       null,
     );
 
-    const firstBranchSize = Math.min(5, fens.length);
-    const chunk = fens.slice(0, firstBranchSize);
+    const tempUserMovesEval: (EngineEvaluation | null)[] = new Array(
+      fens.length,
+    ).fill(null);
 
-    const results = await analyzeFens(chunk);
-    if (results === null) {
+    const evaluationResults = await evaluateFens(fens);
+    if (evaluationResults === null) {
       return;
     }
 
-    results.forEach((result, i) => {
+    evaluationResults.forEach((result, i) => {
+      if (result !== null) {
+        tempUserMovesEval[i] = result;
+      }
+    });
+
+    setPlayedMovesEval(tempUserMovesEval);
+
+    const firstBranchSize = Math.min(5, fens.length);
+    const chunk = fens.slice(0, firstBranchSize);
+
+    const analyzeResults = await analyzeFens(chunk);
+    if (analyzeResults === null) {
+      return;
+    }
+
+    analyzeResults.forEach((result, i) => {
       if (result !== null) {
         tempBestMoves[i] = result;
       }
@@ -284,19 +310,32 @@ const App = () => {
     }
   }
 
- async function analyzeFens(
-  fens: string[],
-  depth = 15,
-  numResults = 3
-): Promise<(EngineMove[] | null)[]> {
-  try {
-    const response = await analyzeFenBatch(fens, depth, numResults);
-    return response.best_moves
-  } catch (error) {
-    console.error(error);
-    return fens.map(() => null);
+  async function analyzeFens(
+    fens: string[],
+    depth = 15,
+    numResults = 3,
+  ): Promise<(EngineMove[] | null)[]> {
+    try {
+      const response = await analyzeFenBatch(fens, depth, numResults);
+      return response.best_moves;
+    } catch (error) {
+      console.error(error);
+      return fens.map(() => null);
+    }
   }
-} 
+
+  async function evaluateFens(
+    fens: string[],
+    depth = 15,
+  ): Promise<(EngineEvaluation | null)[]> {
+    try {
+      const response = await evaluateFensBatch(fens, depth);
+      return response.move_evaluations;
+    } catch (error) {
+      console.error(error);
+      return fens.map(() => null);
+    }
+  }
 
   async function handleAnalyze(): Promise<void> {
     try {
@@ -309,6 +348,10 @@ const App = () => {
 
   return (
     <div className="container">
+      <EvaluationBar
+        currentIndex={currentIndex}
+        playedMovesEvaluation={playedMovesEval}
+      />
       <ChessboardPanel
         fen={currentFen}
         onUserMove={handleUserMove}
