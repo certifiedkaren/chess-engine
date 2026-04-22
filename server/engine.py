@@ -19,10 +19,11 @@ stockfish = Stockfish(
 
 
 def get_best_moves(fen: str, depth: int, num_results: int = 3):
-    if (not stockfish.is_fen_valid(fen)):
+    try:
+        board = chess.Board(fen)
+    except:
         raise ValueError("fen is not valid")
 
-    board = chess.Board(fen)
     if board.is_game_over():
         return []
 
@@ -54,13 +55,23 @@ def get_best_moves(fen: str, depth: int, num_results: int = 3):
 
 
 def evaluate_position(fen: str, depth: int):
-    if (not stockfish.is_fen_valid(fen)):
+    try:
+        board = chess.Board(fen)
+    except:
         raise ValueError("fen is not valid")
+
+    side_to_move = fen.split()[1]
+
+    if (board.is_game_over()):
+        return {
+            "type": "mate_over",
+            "value": -1 if side_to_move == "w" else 1
+        }
+
     stockfish.set_fen_position(fen)
     stockfish.set_depth(depth)
     evaluation = stockfish.get_evaluation()
 
-    side_to_move = fen.split()[1]
     value = int(evaluation["value"])
     if side_to_move == "b":
         value = -value

@@ -11,12 +11,19 @@ const EvaluationBar = ({
 }: EvaluationProps) => {
   const currentEvaluation = playedMovesEvaluation[currentIndex];
   if (!currentEvaluation) {
-    return <p style={{ color: "white", fontSize: "22px" }}>No Evaluation</p>;
+    return <p></p>;
   }
+  console.log(
+    `current evaluation: ${currentEvaluation.type}, ${currentEvaluation.value}`,
+  );
 
   return (
     <>
-      {currentEvaluation.type === "mate" ? (
+      {currentEvaluation.type === "mate_over" ? (
+        <p style={{ color: "white", fontSize: "22px" }}>
+          {currentEvaluation?.value === -1 ? "-M0" : "M0"}
+        </p>
+      ) : currentEvaluation.type === "mate" ? (
         <p style={{ color: "white", fontSize: "22px" }}>
           {currentEvaluation?.value ? `M${currentEvaluation.value}` : null}
         </p>
