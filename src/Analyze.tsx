@@ -17,9 +17,16 @@ const Analyze = ({
         {bestMoves[currentIndex]?.map((move) => move.san).join(" ") ?? null}
       </p>
       <p style={{ color: "white" }}>
-        {bestMoves[currentIndex]?.map((move) => move.centipawn).join(" ") ?? null}
+        {bestMoves[currentIndex]
+          ?.map((move) =>
+            move.mate !== null
+              ? `M${move.mate}`
+              : move.centipawn !== null
+                ? (move.centipawn / 100).toFixed(2)
+                : "",
+          )
+          .join(" ") ?? null}
       </p>
-
     </>
   );
 };

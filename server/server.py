@@ -65,35 +65,45 @@ async def batch_analyze(data: AnalyzeBatchRequest):
     if len(data.fens) > 50:
         raise HTTPException(
             status_code=400, detail="batch size larger than 50")
-    try:
-        engine_best_moves = []
-        async with engine_lock:
-            for current_fen in data.fens:
+
+    engine_best_moves = []
+
+    async with engine_lock:
+        for current_fen in data.fens:
+            try:
                 engine_response = await run_in_threadpool(
                     engine.get_best_moves,
                     fen=current_fen,
                     depth=data.depth,
                     num_results=data.num_results)
                 engine_best_moves.append(engine_response)
-        return {"best_moves": engine_best_moves}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                print(f"/batch-analyze failed for FEN {current_fen}")
+                engine_best_moves.append(None)
+                raise HTTPException(status_code=400, detail=str(e))
+
+    return {"best_moves": engine_best_moves}
 
 
 @app.post("/evaluate-moves")
 async def evaluate_moves(data: EvaluateMovesRequest):
     if not data.fens:
-        raise HTTPException(status_code=400, detail="no fens recieved")
-    try:
-        engine_evaluations = []
-        async with engine_lock:
-            for current_fen in data.fens:
+        raise HTTPException(status_code=400, detail="no fens received")
+
+    engine_evaluations = []
+
+    async with engine_lock:
+        for current_fen in data.fens:
+            try:
                 engine_response = await run_in_threadpool(
                     engine.evaluate_position,
                     fen=current_fen,
                     depth=data.depth,
                 )
                 engine_evaluations.append(engine_response)
-        return {"move_evaluations": engine_evaluations}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                print(f"evaluate failed for fen: {current_fen}")
+                print(e)
+                engine_evaluations.append(None)
+
+    return {"move_evaluations": engine_evaluations}

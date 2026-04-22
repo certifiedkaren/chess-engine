@@ -177,7 +177,7 @@ const App = () => {
     }
   }
 
-  async function analyzeRemainingMoves(
+  async function analyzeAndEvaluateRemainingMoves(
     startIndex: number,
     fens: string[],
     chunkSize = 3,
@@ -186,20 +186,36 @@ const App = () => {
       for (let i = startIndex; i < fens.length; i += chunkSize) {
         const chunk = fens.slice(i, i + chunkSize);
 
-        const results = await analyzeFens(chunk);
-        if (results === null) {
+        const analyzeResults = await analyzeFens(chunk);
+        if (analyzeResults === null) {
           return null;
         }
 
         setBestMovesArr((prev) => {
-          const copy = [...prev];
+          const analyzeCopy = [...prev];
 
-          results.forEach((result, j) => {
+          analyzeResults.forEach((result, j) => {
             if (result !== null) {
-              copy[i + j] = result;
+              analyzeCopy[i + j] = result;
             }
           });
-          return copy;
+          return analyzeCopy;
+        });
+
+        const evaluationResults = await evaluateFens(chunk);
+        if (evaluationResults === null) {
+          return null;
+        }
+
+        setPlayedMovesEval((prev) => {
+          const evaluationCopy = [...prev];
+
+          evaluationResults.forEach((result, j) => {
+            if (result !== null) {
+              evaluationCopy[i + j] = result;
+            }
+          });
+          return evaluationCopy;
         });
       }
     } catch (error) {
@@ -227,19 +243,30 @@ const App = () => {
       fens.push(replay.fen());
     }
 
+    const firstBranchSize = Math.min(5, fens.length);
+    const chunk = fens.slice(0, firstBranchSize);
+
     const tempBestMoves: (EngineMove[] | null)[] = new Array(fens.length).fill(
       null,
     );
-
     const tempUserMovesEval: (EngineEvaluation | null)[] = new Array(
       fens.length,
     ).fill(null);
 
-    const evaluationResults = await evaluateFens(fens);
+    const analyzeResults = await analyzeFens(chunk);
+    if (analyzeResults === null) {
+      return;
+    }
+    analyzeResults.forEach((result, i) => {
+      if (result !== null) {
+        tempBestMoves[i] = result;
+      }
+    });
+
+    const evaluationResults = await evaluateFens(chunk);
     if (evaluationResults === null) {
       return;
     }
-
     evaluationResults.forEach((result, i) => {
       if (result !== null) {
         tempUserMovesEval[i] = result;
@@ -247,27 +274,12 @@ const App = () => {
     });
 
     setPlayedMovesEval(tempUserMovesEval);
-
-    const firstBranchSize = Math.min(5, fens.length);
-    const chunk = fens.slice(0, firstBranchSize);
-
-    const analyzeResults = await analyzeFens(chunk);
-    if (analyzeResults === null) {
-      return;
-    }
-
-    analyzeResults.forEach((result, i) => {
-      if (result !== null) {
-        tempBestMoves[i] = result;
-      }
-    });
-
     setBestMovesArr(tempBestMoves);
     setMainlineMoves(history);
     setMainlineFens(fens);
     setCurrentIndex(0);
 
-    void analyzeRemainingMoves(firstBranchSize, fens);
+    void analyzeAndEvaluateRemainingMoves(firstBranchSize, fens);
   }
 
   function handleUserMove(from: string, to: string): boolean {
