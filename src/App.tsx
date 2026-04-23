@@ -224,6 +224,10 @@ const App = () => {
   }
 
   async function importPgn(pgn: string) {
+    if (pgn.trim() === "") {
+      return;
+    }
+
     const temp = new Chess();
     try {
       temp.loadPgn(pgn);

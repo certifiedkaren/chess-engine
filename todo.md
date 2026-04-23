@@ -3,6 +3,7 @@
 ~~- divide the analysis by 100 for each item~~ <br>
 ~~- bug: backend fails if one in chunk is null~~ <br>
 ~~- fix: when its already mate, make it return M0 or -M0.~~ <br>
+~~- fix: skip pgn import if its empty~~ <br>
 
 - make a bar to show the evaluation
 - better styling for the analysis
