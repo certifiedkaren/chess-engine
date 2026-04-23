@@ -45,13 +45,20 @@ def get_best_moves(fen: str, depth: int, num_results: int = 3):
             if not board.is_legal(uci_move):
                 continue
 
-            if not isinstance(move_info["Centipawn"], int):
+            if not isinstance(move_info["Centipawn"], int) and not isinstance(move_info["Mate"], int):
                 continue
+
+            centipawn_value = None
+            if isinstance(move_info["Centipawn"], int):
+                if (side_to_move == "w"):
+                    centipawn_value = move_info["Centipawn"]
+                else: 
+                    centipawn_value = -move_info["Centipawn"]
             
             result.append({
                 "uci": move,
                 "san": board.san(uci_move),
-                "centipawn": move_info["Centipawn"] if side_to_move == "w" else -move_info["Centipawn"],
+                "centipawn": centipawn_value,
                 "mate": move_info["Mate"]
             })
         except Exception as e:
