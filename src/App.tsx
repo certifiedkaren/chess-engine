@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ChessboardPanel from "./ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "./Sidebar";
@@ -11,6 +11,12 @@ import {
   evaluateFensBatch,
   type EngineEvaluation,
 } from "./api";
+import captureSound from "./assets/capture.mp3";
+import castleSound from "./assets/castle.mp3";
+import checkSound from "./assets/check.mp3";
+import illegalMoveSound from "./assets/illegal.mp3";
+import moveSound from "./assets/move.mp3";
+import promoteSound from "./assets/promote.mp3";
 import "./App.css";
 
 const App = () => {
@@ -39,6 +45,13 @@ const App = () => {
   const [whiteElo, setWhiteElo] = useState<number>();
   const [blackUsername, setBlackUsername] = useState("Black");
   const [blackElo, setBlackElo] = useState<number>();
+
+  const captureSoundRef = useRef(new Audio(captureSound));
+  const castleSoundRef = useRef(new Audio(castleSound));
+  const checkSoundRef = useRef(new Audio(checkSound));
+  const illegaMoveSoundRef = useRef(new Audio(illegalMoveSound));
+  const moveSoundRef = useRef(new Audio(moveSound));
+  const promoteSoundRef = useRef(new Audio(promoteSound));
 
   (useEffect(() => {
     function handleKeypress(e: KeyboardEvent) {
@@ -81,6 +94,7 @@ const App = () => {
     const lastIndex = mainlineFens.length - 1;
     setCurrentIndex(lastIndex);
     setCurrentFen(mainlineFens[lastIndex]);
+    playSound(mainlineMoves[lastIndex - 1]);
 
     if (!isOnMainLine) {
       setBranchStartIndex(null);
@@ -95,11 +109,13 @@ const App = () => {
       if (move >= 0 && move < mainlineFens.length) {
         setCurrentIndex(move);
         setCurrentFen(mainlineFens[move]);
+        playSound(mainlineMoves[move - 1]);
       }
     } else {
       if (move >= 0 && move < branchFens.length) {
         setCurrentBranchIndex(move);
         setCurrentFen(branchFens[move]);
+        playSound(mainlineMoves[move - 1]);
       }
     }
   }
@@ -110,6 +126,7 @@ const App = () => {
         const nextIndex = currentIndex + 1;
         setCurrentIndex(nextIndex);
         setCurrentFen(mainlineFens[nextIndex]);
+        playSound(mainlineMoves[nextIndex - 1]);
       }
     } else {
       if (currentBranchIndex === null) return;
@@ -118,6 +135,7 @@ const App = () => {
         const nextIndex = currentBranchIndex + 1;
         setCurrentBranchIndex(nextIndex);
         setCurrentFen(branchFens[nextIndex]);
+        playSound(mainlineMoves[nextIndex - 1]);
       }
     }
   }
@@ -128,6 +146,7 @@ const App = () => {
         const prevIndex = currentIndex - 1;
         setCurrentIndex(prevIndex);
         setCurrentFen(mainlineFens[prevIndex]);
+        playSound(mainlineMoves[prevIndex - 1]);
       }
     } else {
       if (currentBranchIndex === null) return;
@@ -136,11 +155,13 @@ const App = () => {
         const prevIndex = currentBranchIndex - 1;
         setCurrentBranchIndex(prevIndex);
         setCurrentFen(branchFens[prevIndex]);
+        playSound(mainlineMoves[prevIndex - 1]);
       } else if (branchStartIndex !== null) {
         setIsOnMainLine(true);
         setCurrentIndex(branchStartIndex);
         setCurrentFen(mainlineFens[branchStartIndex]);
         setCurrentBranchIndex(null);
+        playSound(mainlineMoves[branchStartIndex - 1]);
       }
     }
   }
@@ -152,7 +173,44 @@ const App = () => {
       setCurrentBranchIndex(null);
       setBranchFens([]);
       setIsOnMainLine(true);
+      playSound(mainlineMoves[branchStartIndex - 1]);
     }
+  }
+
+  function playSound(move: string) {
+    if (!move) return;
+
+    if (move.includes("=")) {
+      if (!promoteSoundRef.current) return;
+      promoteSoundRef.current.currentTime = 0;
+      promoteSoundRef.current.play();
+      return;
+    }
+
+    if (move.includes("O-O")) {
+      if (!castleSoundRef.current) return;
+      castleSoundRef.current.currentTime = 0;
+      castleSoundRef.current.play();
+      return;
+    }
+
+    if (move.includes("x")) {
+      if (!captureSoundRef.current) return;
+      captureSoundRef.current.currentTime = 0;
+      captureSoundRef.current.play();
+      return;
+    }
+
+    if (move.includes("+") || move.includes("#")) {
+      if (!checkSoundRef.current) return;
+      checkSoundRef.current.currentTime = 0;
+      checkSoundRef.current.play();
+      return;
+    }
+
+    if (!moveSoundRef.current) return;
+    moveSoundRef.current.currentTime = 0;
+    moveSoundRef.current.play();
   }
 
   function getUsernameAndElo(pgn: string) {

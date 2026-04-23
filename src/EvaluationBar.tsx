@@ -13,9 +13,6 @@ const EvaluationBar = ({
   if (!currentEvaluation) {
     return <p></p>;
   }
-  console.log(
-    `current evaluation: ${currentEvaluation.type}, ${currentEvaluation.value}`,
-  );
 
   return (
     <>

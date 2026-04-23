@@ -20,7 +20,7 @@ type Props = {
 
 function ChessboardPanel({ fen, onUserMove, playerInfo }: Props) {
   const { whiteUsername, blackUsername, whiteElo, blackElo } = playerInfo;
-  const chessGame = new Chess(fen);
+  const chessGame = fen ? new Chess(fen) : new Chess();
   const [moveFrom, setMoveFrom] = useState("");
   const [optionSquares, setOptionSquares] = useState({});
 
