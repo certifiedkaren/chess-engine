@@ -5,6 +5,7 @@
 ~~- fix: when its already mate, make it return M0 or -M0.~~ <br>
 ~~- fix: skip pgn import if its empty~~ <br>
 ~~- add sound effects: move, take, can't move there, game over, check, promotion~~<br>
+~~-fix: on the evaluation for the analysis, put in terms of white~~ <br>
 
 - make a bar to show the evaluation
 - better styling for the analysis

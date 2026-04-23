@@ -33,6 +33,8 @@ def get_best_moves(fen: str, depth: int, num_results: int = 3):
 
     result = []
 
+    side_to_move = fen.split()[1]
+
     for move_info in uci_top_moves:
         move = move_info["Move"]
         if not isinstance(move, str):
@@ -43,10 +45,13 @@ def get_best_moves(fen: str, depth: int, num_results: int = 3):
             if not board.is_legal(uci_move):
                 continue
 
+            if not isinstance(move_info["Centipawn"], int):
+                continue
+            
             result.append({
                 "uci": move,
                 "san": board.san(uci_move),
-                "centipawn": move_info["Centipawn"],
+                "centipawn": move_info["Centipawn"] if side_to_move == "w" else -move_info["Centipawn"],
                 "mate": move_info["Mate"]
             })
         except Exception as e:
