@@ -6,8 +6,8 @@
 ~~- fix: skip pgn import if its empty~~ <br>
 ~~- add sound effects: move, take, can't move there, game over, check, promotion~~<br>
 ~~-fix: on the evaluation for the analysis, put in terms of white~~ <br>
+~~- make a bar to show the evaluation~~<br>
 
-- make a bar to show the evaluation
 - better styling for the analysis
 - make it so it evaluates and analyzes on user move (make new evaluate function for just 1 fen)
 - add loading bar while its generating the analysis array

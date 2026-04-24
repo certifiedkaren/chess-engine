@@ -121,7 +121,7 @@ function ChessboardPanel({ fen, onUserMove, playerInfo }: Props) {
 
   return (
     <div className={styles.chessboardContainer}>
-      <div className={styles.playerContainer}>
+      <div className={`${styles.playerContainer} ${styles.blackPlayer}`}>
         <img src="src/assets/chess_black_king.png" alt="chess king piece" />
         <span className={styles.playerText}>
           {blackUsername}
@@ -133,7 +133,7 @@ function ChessboardPanel({ fen, onUserMove, playerInfo }: Props) {
         <Chessboard options={chessboardOptions} />
       </div>
 
-      <div className={styles.playerContainer}>
+      <div className={`${styles.playerContainer} ${styles.whitePlayer}`}>
         <img src="src/assets/chess_white_king.png" alt="chess king piece" />
         <span className={styles.playerText}>
           {whiteUsername}

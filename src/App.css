@@ -5,6 +5,12 @@
   margin-top: 5vw;
 }
 
+.boardContainer {
+  display: flex;
+  gap: 6px;
+  margin-left: 2vw;
+}
+
 [id^="click-or-drag-to-move-square"] span span {
   font-size: 24px !important;
 }

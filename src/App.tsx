@@ -46,6 +46,7 @@ const App = () => {
   const [blackUsername, setBlackUsername] = useState("Black");
   const [blackElo, setBlackElo] = useState<number>();
 
+  // add checkmate sound effect
   const captureSoundRef = useRef(new Audio(captureSound));
   const castleSoundRef = useRef(new Audio(castleSound));
   const checkSoundRef = useRef(new Audio(checkSound));
@@ -422,20 +423,22 @@ const App = () => {
 
   return (
     <div className="container">
-      <EvaluationBar
-        currentIndex={currentIndex}
-        playedMovesEvaluation={playedMovesEval}
-      />
-      <ChessboardPanel
-        fen={currentFen}
-        onUserMove={handleUserMove}
-        playerInfo={{
-          whiteUsername: whiteUsername,
-          blackUsername: blackUsername,
-          whiteElo: whiteElo,
-          blackElo: blackElo,
-        }}
-      />
+      <div className="boardContainer">
+        <EvaluationBar
+          currentIndex={currentIndex}
+          playedMovesEvaluation={playedMovesEval}
+        />
+        <ChessboardPanel
+          fen={currentFen}
+          onUserMove={handleUserMove}
+          playerInfo={{
+            whiteUsername: whiteUsername,
+            blackUsername: blackUsername,
+            whiteElo: whiteElo,
+            blackElo: blackElo,
+          }}
+        />
+      </div>
       <div>
         <Sidebar
           pgnState={{

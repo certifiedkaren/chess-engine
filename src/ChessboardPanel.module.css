@@ -1,18 +1,29 @@
 .chessboardContainer {
+  position: relative;
   width: 48vw;
-  margin-left: 15vw;
+  overflow: visible;
 }
 
 .playerContainer {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: absolute;
+  z-index: 10;
 
   width: 200px;
   padding: 8px 12px;
   background-color: #2a2a2a;
   color: white;
   border-radius: 8px;
+}
+
+.whitePlayer {
+  bottom: -60px;
+}
+
+.blackPlayer {
+  top: -60px;
 }
 
 .playerContainer img {
