@@ -14,9 +14,9 @@ import {
 import captureSound from "./assets/capture.mp3";
 import castleSound from "./assets/castle.mp3";
 import checkSound from "./assets/check.mp3";
-import illegalMoveSound from "./assets/illegal.mp3";
 import moveSound from "./assets/move.mp3";
 import promoteSound from "./assets/promote.mp3";
+import checkmateSound from "./assets/checkmate.mp3";
 import "./App.css";
 
 const App = () => {
@@ -50,9 +50,9 @@ const App = () => {
   const captureSoundRef = useRef(new Audio(captureSound));
   const castleSoundRef = useRef(new Audio(castleSound));
   const checkSoundRef = useRef(new Audio(checkSound));
-  const illegaMoveSoundRef = useRef(new Audio(illegalMoveSound));
   const moveSoundRef = useRef(new Audio(moveSound));
   const promoteSoundRef = useRef(new Audio(promoteSound));
+  const checkmateSoundRef = useRef(new Audio(checkmateSound));
 
   (useEffect(() => {
     function handleKeypress(e: KeyboardEvent) {
@@ -195,6 +195,13 @@ const App = () => {
       return;
     }
 
+    if (move.includes("#")) {
+      if (!checkmateSoundRef.current) return;
+      checkmateSoundRef.current.currentTime = 0;
+      checkmateSoundRef.current.play();
+      return;
+    }
+
     if (move.includes("x")) {
       if (!captureSoundRef.current) return;
       captureSoundRef.current.currentTime = 0;
@@ -202,7 +209,7 @@ const App = () => {
       return;
     }
 
-    if (move.includes("+") || move.includes("#")) {
+    if (move.includes("+")) {
       if (!checkSoundRef.current) return;
       checkSoundRef.current.currentTime = 0;
       checkSoundRef.current.play();
