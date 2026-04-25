@@ -4,6 +4,7 @@ type SidebarProps = {
   pgnState: {
     pgn: string;
     setPgn: React.Dispatch<React.SetStateAction<string>>;
+    isImporting: boolean;
   };
   navigation: {
     onNextMove: () => void;
@@ -29,7 +30,7 @@ const Sidebar = ({
   gameState,
   actions,
 }: SidebarProps) => {
-  const { pgn, setPgn } = pgnState;
+  const { pgn, setPgn, isImporting } = pgnState;
   const {
     onNextMove,
     onPrevMove,
@@ -58,7 +59,7 @@ const Sidebar = ({
         ></textarea>
         {/* add a popup when the pgn was imported */}
         <button type="button" onClick={() => onImportPgn(pgn)}>
-          import pgn
+          {isImporting ? "Importing ..." : "Import PGN"}
         </button>
       </>
       <div className={styles.arrowButtonGroup}>

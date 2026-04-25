@@ -41,12 +41,14 @@ const App = () => {
     (EngineEvaluation | null)[]
   >([]);
 
+  const [isImporting, setIsImporting] = useState(false);
+  const isImportingRef = useRef(false);
+
   const [whiteUsername, setWhiteUsername] = useState("White");
   const [whiteElo, setWhiteElo] = useState<number>();
   const [blackUsername, setBlackUsername] = useState("Black");
   const [blackElo, setBlackElo] = useState<number>();
 
-  // add checkmate sound effect
   const captureSoundRef = useRef(new Audio(captureSound));
   const castleSoundRef = useRef(new Audio(castleSound));
   const checkSoundRef = useRef(new Audio(checkSound));
@@ -290,11 +292,16 @@ const App = () => {
   }
 
   async function importPgn(pgn: string) {
+    if (isImportingRef.current) {
+      return;
+    }
+
     if (pgn.trim() === "") {
       return;
     }
 
     const temp = new Chess();
+
     try {
       temp.loadPgn(pgn);
     } catch {
@@ -302,54 +309,62 @@ const App = () => {
       return;
     }
 
-    getUsernameAndElo(pgn);
+    setIsImporting(true);
+    isImportingRef.current = true;
+    try {
+      getUsernameAndElo(pgn);
 
-    const history = temp.history();
-    const replay = new Chess();
-    const fens: string[] = [replay.fen()];
+      const history = temp.history();
+      const replay = new Chess();
+      const fens: string[] = [replay.fen()];
 
-    for (const move of history) {
-      replay.move(move);
-      fens.push(replay.fen());
-    }
-
-    const firstBranchSize = Math.min(5, fens.length);
-    const chunk = fens.slice(0, firstBranchSize);
-
-    const tempBestMoves: (EngineMove[] | null)[] = new Array(fens.length).fill(
-      null,
-    );
-    const tempUserMovesEval: (EngineEvaluation | null)[] = new Array(
-      fens.length,
-    ).fill(null);
-
-    const analyzeResults = await analyzeFens(chunk);
-    if (analyzeResults === null) {
-      return;
-    }
-    analyzeResults.forEach((result, i) => {
-      if (result !== null) {
-        tempBestMoves[i] = result;
+      for (const move of history) {
+        replay.move(move);
+        fens.push(replay.fen());
       }
-    });
 
-    const evaluationResults = await evaluateFens(chunk);
-    if (evaluationResults === null) {
-      return;
-    }
-    evaluationResults.forEach((result, i) => {
-      if (result !== null) {
-        tempUserMovesEval[i] = result;
+      const firstBranchSize = Math.min(5, fens.length);
+      const chunk = fens.slice(0, firstBranchSize);
+
+      const tempBestMoves: (EngineMove[] | null)[] = new Array(
+        fens.length,
+      ).fill(null);
+      const tempUserMovesEval: (EngineEvaluation | null)[] = new Array(
+        fens.length,
+      ).fill(null);
+
+      const analyzeResults = await analyzeFens(chunk);
+      if (analyzeResults === null) {
+        return;
       }
-    });
+      analyzeResults.forEach((result, i) => {
+        if (result !== null) {
+          tempBestMoves[i] = result;
+        }
+      });
 
-    setPlayedMovesEval(tempUserMovesEval);
-    setBestMovesArr(tempBestMoves);
-    setMainlineMoves(history);
-    setMainlineFens(fens);
-    setCurrentIndex(0);
+      const evaluationResults = await evaluateFens(chunk);
+      if (evaluationResults === null) {
+        return;
+      }
+      evaluationResults.forEach((result, i) => {
+        if (result !== null) {
+          tempUserMovesEval[i] = result;
+        }
+      });
 
-    void analyzeAndEvaluateRemainingMoves(firstBranchSize, fens);
+      setPlayedMovesEval(tempUserMovesEval);
+      setBestMovesArr(tempBestMoves);
+      setMainlineMoves(history);
+      setMainlineFens(fens);
+      setCurrentIndex(0);
+      void analyzeAndEvaluateRemainingMoves(firstBranchSize, fens);
+    } catch (error) {
+      console.error("Import failed:", error);
+    } finally {
+      setIsImporting(false);
+      isImportingRef.current = false;
+    }
   }
 
   function handleUserMove(from: string, to: string): boolean {
@@ -451,6 +466,7 @@ const App = () => {
           pgnState={{
             pgn,
             setPgn,
+            isImporting,
           }}
           navigation={{
             onNextMove: nextMove,

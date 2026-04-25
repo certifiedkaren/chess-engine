@@ -7,11 +7,11 @@
 ~~- add sound effects: move, take, can't move there, game over, check, promotion~~<br>
 ~~-fix: on the evaluation for the analysis, put in terms of white~~ <br>
 ~~- make a bar to show the evaluation~~<br>
-~~- add checkmate sound effect~~
+~~- add checkmate sound effect~~ <br>
+~~- prevent user from clicking the import button if its running~~ <br>
 
 - better styling for the analysis
 - make it so it evaluates and analyzes on user move (make new evaluate function for just 1 fen)
 - add loading bar while its generating the analysis array
 - use docker container to run
-- potential bug: importing another pgn when the last one isn't done
-- prevent user from clicking the import button if its running
+- add a notification for errors
