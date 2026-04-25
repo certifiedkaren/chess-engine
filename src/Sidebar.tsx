@@ -59,7 +59,7 @@ const Sidebar = ({
         ></textarea>
         {/* add a popup when the pgn was imported */}
         <button type="button" onClick={() => onImportPgn(pgn)}>
-          {isImporting ? "Importing ..." : "Import PGN"}
+          {isImporting ? "Importing..." : "Import PGN"}
         </button>
       </>
       <div className={styles.arrowButtonGroup}>

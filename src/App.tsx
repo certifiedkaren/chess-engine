@@ -253,6 +253,9 @@ const App = () => {
     try {
       for (let i = startIndex; i < fens.length; i += chunkSize) {
         const chunk = fens.slice(i, i + chunkSize);
+        console.log(
+          `index ${i}, import status: ${isImporting}, ref status ${isImportingRef.current}`,
+        );
 
         const analyzeResults = await analyzeFens(chunk);
         if (analyzeResults === null) {
@@ -358,7 +361,7 @@ const App = () => {
       setMainlineMoves(history);
       setMainlineFens(fens);
       setCurrentIndex(0);
-      void analyzeAndEvaluateRemainingMoves(firstBranchSize, fens);
+      await analyzeAndEvaluateRemainingMoves(firstBranchSize, fens);
     } catch (error) {
       console.error("Import failed:", error);
     } finally {
