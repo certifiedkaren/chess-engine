@@ -12,6 +12,7 @@
 
 - better styling for the analysis
 - make it so it evaluates and analyzes on user move (make new evaluate function for just 1 fen)
+- be able to display the user move history on sidebar
 - add loading bar while its generating the analysis array
 - use docker container to run
 - add a notification for errors

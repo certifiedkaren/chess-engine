@@ -34,13 +34,13 @@ const App = () => {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   );
   const [isOnMainLine, setIsOnMainLine] = useState(true);
-  const [pgn, setPgn] = useState("");
   const [bestMoves, setBestMoves] = useState<EngineMove[]>([]);
   const [bestMovesArr, setBestMovesArr] = useState<(EngineMove[] | null)[]>([]);
   const [playedMovesEval, setPlayedMovesEval] = useState<
     (EngineEvaluation | null)[]
   >([]);
 
+  const [pgn, setPgn] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const isImportingRef = useRef(false);
 
@@ -80,6 +80,15 @@ const App = () => {
     };
   }),
     [nextMove, prevMove, mainlineFens.length]);
+
+  useEffect(() => {
+    async function analyzeStartingPosition() {
+      const startingFen = new Chess().fen();
+      const bestFenResult = await analyzeFen(startingFen);
+      setBestMovesArr([bestFenResult]);
+    }
+    void analyzeStartingPosition();
+  }, []);
 
   function gotoBeginning() {
     setCurrentIndex(0);
@@ -314,6 +323,7 @@ const App = () => {
 
     setIsImporting(true);
     isImportingRef.current = true;
+
     try {
       getUsernameAndElo(pgn);
 
@@ -373,40 +383,62 @@ const App = () => {
   function handleUserMove(from: string, to: string): boolean {
     const game = new Chess(currentFen);
     try {
-      game.move({ from, to, promotion: "q" });
-      if (isOnMainLine) {
+      const move = game.move({ from, to, promotion: "q" });
+      const isAtEndOfMainline = currentIndex === mainlineFens.length - 1;
+      if (isOnMainLine && isAtEndOfMainline) {
+        setMainlineMoves((prev) => [...prev, move.san]);
+        setMainlineFens((prev) => [...prev, game.fen()]);
+        setCurrentIndex((prev) => prev + 1);
+        setIsOnMainLine(true);
+      } else if (isOnMainLine) {
         setBranchStartIndex(currentIndex);
         setBranchFens([currentFen, game.fen()]);
         setCurrentBranchIndex(1);
+        setIsOnMainLine(false);
       } else {
         if (currentBranchIndex === null) {
+          setBranchFens([currentFen, game.fen()]);
           setCurrentBranchIndex(1);
-          return false;
+        } else {
+          setBranchFens((prev) => [
+            ...prev.slice(0, currentBranchIndex + 1),
+            game.fen(),
+          ]);
+
+          setCurrentBranchIndex(currentBranchIndex + 1);
         }
-
-        setBranchFens((prev) => [
-          ...prev.slice(0, currentBranchIndex + 1),
-          game.fen(),
-        ]);
-
-        setCurrentBranchIndex((i) => (i === null ? 1 : i + 1));
+        setIsOnMainLine(false);
       }
+      setCurrentFen(game.fen());
+      void analyzeUserMove(game.fen(), currentIndex + 1);
+      return true;
     } catch {
       console.log("invalid move");
       return false;
     }
-
-    setCurrentFen(game.fen());
-    setIsOnMainLine(false);
-    return true;
   }
 
-  async function analyzeFen(fen: string): Promise<EngineMove[] | undefined> {
+  async function analyzeUserMove(fen: string, index: number) {
+    try {
+      const result = await analyzeFen(fen);
+      setBestMovesArr((prev) => {
+        const copy = [...prev];
+        copy[index] = result;
+        return copy;
+      });
+      // add evaluation as well
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function analyzeFen(fen: string): Promise<EngineMove[] | null> {
     try {
       const response = await analyzePosition(fen);
       return response.best_moves;
     } catch (error) {
       console.error(error);
+      return null;
     }
   }
 
