@@ -18,3 +18,4 @@
 - use docker container to run
 - add a notification for errors
 - have storage of the state on user refresh
+- prevent from flickering 0.00 on eval bar when moving

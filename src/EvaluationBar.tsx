@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { type EngineEvaluation } from "./api";
 import styles from "./EvaluationBar.module.css";
 
@@ -10,10 +11,14 @@ const EvaluationBar = ({
   currentIndex,
   playedMovesEvaluation,
 }: EvaluationProps) => {
+  const previousEvaluationRef = useRef<EngineEvaluation | null>(null);
   const currentEvaluation = playedMovesEvaluation[currentIndex];
-  // if (!currentEvaluation) {
-  //   return <div></div>;
-  // }
+
+  useEffect(() => {
+    if (currentEvaluation != null) {
+      previousEvaluationRef.current = currentEvaluation;
+    }
+  });
 
   function convertEvalToPercent(
     type: string,
@@ -34,9 +39,15 @@ const EvaluationBar = ({
     return 50 + (tempEval / maxEval) * 50;
   }
 
-  const type = currentEvaluation?.type ?? "cp";
-  const value = currentEvaluation?.value ?? 0;
+  const displayedEvaluation =
+    currentEvaluation ?? previousEvaluationRef.current;
+
+  const type = displayedEvaluation?.type ?? "cp";
+  const value = displayedEvaluation?.value ?? 0;
   const whitePercent = convertEvalToPercent(type, value);
+  if (currentEvaluation != null) {
+    console.log(`current eval: ${currentEvaluation.value}`);
+  }
 
   return (
     <>
@@ -57,7 +68,7 @@ const EvaluationBar = ({
               ? `M${Math.abs(value)}`
               : Number.isFinite(value)
                 ? Math.abs(value / 100).toFixed(2)
-                : "0.00"}
+                : "..."}
         </p>
       </div>
     </>
