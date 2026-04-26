@@ -24,6 +24,12 @@ class AnalyzeBatchRequest(BaseModel):
                              description="Number of top moves to return")
 
 
+class EvaluateRequest(BaseModel):
+    fen: str = Field(description="FEN string for current chess position")
+    depth: int = Field(default=15, ge=1, le=25,
+                       description="Search depth for engine")
+
+
 class EvaluateMovesRequest(BaseModel):
     fens: List[str] = Field(
         description="List of FEN strings for chess positions")
@@ -83,6 +89,25 @@ async def batch_analyze(data: AnalyzeBatchRequest):
                 raise HTTPException(status_code=400, detail=str(e))
 
     return {"best_moves": engine_best_moves}
+
+
+@app.post("/evaluate")
+async def evaluate(data: EvaluateRequest):
+    if not data.fen:
+        raise HTTPException(status_code=400, detail="no fens received")
+
+    async with engine_lock:
+        try:
+            engine_response = await run_in_threadpool(
+                engine.evaluate_position,
+                fen=data.fen,
+                depth=data.depth,
+            )
+        except Exception as e:
+            print(f"evaluate failed for fen: {data.fen}")
+            print(e)
+
+    return engine_response
 
 
 @app.post("/evaluate-moves")

@@ -11,9 +11,9 @@ const EvaluationBar = ({
   playedMovesEvaluation,
 }: EvaluationProps) => {
   const currentEvaluation = playedMovesEvaluation[currentIndex];
-  if (!currentEvaluation) {
-    return <div></div>;
-  }
+  // if (!currentEvaluation) {
+  //   return <div></div>;
+  // }
 
   function convertEvalToPercent(
     type: string,
@@ -34,8 +34,8 @@ const EvaluationBar = ({
     return 50 + (tempEval / maxEval) * 50;
   }
 
-  const type = currentEvaluation.type;
-  const value = currentEvaluation.value;
+  const type = currentEvaluation?.type ?? "cp";
+  const value = currentEvaluation?.value ?? 0;
   const whitePercent = convertEvalToPercent(type, value);
 
   return (
@@ -51,13 +51,13 @@ const EvaluationBar = ({
             value > 0 ? styles.evaluationTextWhite : styles.evaluationTextBlack
           }
         >
-          {currentEvaluation.type === "mate_over"
+          {type === "mate_over"
             ? "M0"
-            : currentEvaluation.type === "mate"
-              ? `M${Math.abs(currentEvaluation.value)}`
-              : Math.abs(currentEvaluation.value) !== undefined
-                ? Math.abs(currentEvaluation.value / 100).toFixed(2)
-                : null}
+            : type === "mate"
+              ? `M${Math.abs(value)}`
+              : Number.isFinite(value)
+                ? Math.abs(value / 100).toFixed(2)
+                : "0.00"}
         </p>
       </div>
     </>

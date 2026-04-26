@@ -7,8 +7,9 @@ import EvaluationBar from "./EvaluationBar";
 import {
   analyzePosition,
   analyzeFenBatch,
-  type EngineMove,
+  fetchFenEvaluation,
   evaluateFensBatch,
+  type EngineMove,
   type EngineEvaluation,
 } from "./api";
 import captureSound from "./assets/capture.mp3";
@@ -84,8 +85,11 @@ const App = () => {
   useEffect(() => {
     async function analyzeStartingPosition() {
       const startingFen = new Chess().fen();
+
       const bestFenResult = await analyzeFen(startingFen);
       setBestMovesArr([bestFenResult]);
+      const evaluationResult = await getFenEvaluation(startingFen);
+      setPlayedMovesEval([evaluationResult]);
     }
     void analyzeStartingPosition();
   }, []);
@@ -420,13 +424,19 @@ const App = () => {
 
   async function analyzeUserMove(fen: string, index: number) {
     try {
-      const result = await analyzeFen(fen);
+      const bestMovesResult = await analyzeFen(fen);
       setBestMovesArr((prev) => {
-        const copy = [...prev];
-        copy[index] = result;
-        return copy;
+        const bestMovesCopy = [...prev];
+        bestMovesCopy[index] = bestMovesResult;
+        return bestMovesCopy;
       });
-      // add evaluation as well
+
+      const evaluationResult = await getFenEvaluation(fen);
+      setPlayedMovesEval((prev) => {
+        const evaluationCopy = [...prev];
+        evaluationCopy[index] = evaluationResult;
+        return evaluationCopy;
+      });
     } catch (error) {
       console.error(error);
     }
@@ -456,9 +466,22 @@ const App = () => {
     }
   }
 
+  async function getFenEvaluation(
+    fen: string,
+    depth: number = 15,
+  ): Promise<EngineEvaluation | null> {
+    try {
+      const response = await fetchFenEvaluation(fen, depth);
+      return response;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
   async function evaluateFens(
     fens: string[],
-    depth = 15,
+    depth: number = 15,
   ): Promise<(EngineEvaluation | null)[]> {
     try {
       const response = await evaluateFensBatch(fens, depth);

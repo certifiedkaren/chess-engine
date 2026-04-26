@@ -37,7 +37,6 @@ export async function analyzePosition(fen: string, depth=15, numResults=3): Prom
   return data;
 }
 
-
 export async function analyzeFenBatch(fens: string[], depth=15, numResults=3): Promise<AnalyzeBatchResponse> {
   const response = await fetch("http://127.0.0.1:8000/batch-analyze", {
     method: "POST",
@@ -50,6 +49,20 @@ export async function analyzeFenBatch(fens: string[], depth=15, numResults=3): P
 
   const data: AnalyzeBatchResponse = await response.json();
   return data;
+}
+
+export async function fetchFenEvaluation(fen: string, depth=15): Promise<EngineEvaluation> {
+  const response = await fetch("http://127.0.0.1:8000/evaluate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fen, depth}),
+  });
+  if (!response.ok) {
+    throw new Error(`Reponse Status ${response.status}`);
+  }
+
+  const data: EngineEvaluation = await response.json();
+  return data
 }
 
 export async function evaluateFensBatch(fens: string[], depth=15): Promise<EvaluateBatchResponse> {

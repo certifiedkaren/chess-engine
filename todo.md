@@ -9,6 +9,7 @@
 ~~- make a bar to show the evaluation~~<br>
 ~~- add checkmate sound effect~~ <br>
 ~~- prevent user from clicking the import button if its running~~ <br>
+~~- analyze + evaluate user moves when on branch~~
 
 - better styling for the analysis
 - make it so it evaluates and analyzes on user move (make new evaluate function for just 1 fen)
@@ -16,3 +17,4 @@
 - add loading bar while its generating the analysis array
 - use docker container to run
 - add a notification for errors
+- have storage of the state on user refresh
