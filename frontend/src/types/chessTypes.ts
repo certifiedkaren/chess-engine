@@ -36,6 +36,10 @@ export type EvaluateBatchResponse = {
   move_evaluations: (EngineEvaluation | null)[];
 };
 
+export type FetchGamesResponse = {
+  games: SavedGame[];
+};
+
 export type Branch = {
   id: string;
   startIndex: number;
@@ -88,4 +92,9 @@ export type Game = {
   branches: Branch[];
   mainlineMoveEvaluations: (EngineEvaluation | null)[];
   mainlineMoveClassifications: NullableMoveClassification[];
+};
+
+export type SavedGame = Game & {
+  id: number;
+  createdAt: string;
 };

@@ -5,8 +5,10 @@ import {
   type AnalyzeResponse,
   type AnalyzeBatchResponse,
   type EvaluateBatchResponse,
+  type FetchGamesResponse,
   type Game,
 } from "../types/chessTypes.ts";
+
 export async function analyzePosition(
   fen: string,
   depth = 15,
@@ -85,6 +87,17 @@ export async function saveGameData(gameData: Game) {
   });
   if (!response.ok) {
     throw new Error(`Failed to Save Game: Response Status ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function fetchGames(): Promise<FetchGamesResponse> {
+  const response = await fetch(`${apiUrl}/games`);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to Fetch Games: Response Status ${response.status}`,
+    );
   }
   return response.json();
 }
