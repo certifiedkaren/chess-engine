@@ -1,7 +1,8 @@
 fastapi
 pydantic
+starlette
+uvicorn[standard]
 chess
 python-dotenv
-uvicorn
-sqlalchemy
-psycopg
+SQLAlchemy
+psycopg[binary]

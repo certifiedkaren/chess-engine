@@ -1,14 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Body, FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List
+from typing import Any, List
 from starlette.concurrency import run_in_threadpool
 import engine as chess_engine
 import asyncio
 import os
-from database import get_db
+from database import Base, engine as db_engine, get_db
+from models import Game
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 
 class AnalyzeRequest(BaseModel):
     fen: str = Field(description="FEN string for current chess position")
@@ -43,6 +43,8 @@ class EvaluateMovesRequest(BaseModel):
 app = FastAPI()
 
 engine_lock = asyncio.Lock()
+
+Base.metadata.create_all(bind=db_engine)
 
 cors_origins = os.getenv("CORS_ORIGINS")
 origins = (
@@ -144,6 +146,52 @@ async def evaluate_moves(data: EvaluateMovesRequest):
     return {"move_evaluations": engine_evaluations}
 
 @app.post("/save-game")
-async def save_game(db: Session = Depends(get_db)):
-    db.execute(text(""))
-    return {"database": "ok"}
+async def save_game(data: dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+    game_data = data.get("gameData", data)
+    game = Game(
+        white_player=game_data.get("whitePlayer"),
+        black_player=game_data.get("blackPlayer"),
+        white_elo=game_data.get("whiteElo"),
+        black_elo=game_data.get("blackElo"),
+        mainline_fens=game_data.get("mainlineFens", []),
+        mainline_best_moves=game_data.get("mainlineBestMoves", []),
+        branches=game_data.get("branches", []),
+        mainline_move_evaluations=game_data.get("mainlineMoveEvaluations", []),
+        mainline_move_classifications=game_data.get(
+            "mainlineMoveClassifications",
+            [],
+        ),
+    )
+
+    try:
+        db.add(game)
+        db.commit()
+        db.refresh(game)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"failed to save game: {e}")
+
+    return {"id": game.id, "database": "ok"}
+
+
+@app.get("/games")
+async def get_games(db: Session = Depends(get_db)):
+    games = db.query(Game).order_by(Game.created_at.desc()).all()
+    return {
+        "games": [
+            {
+                "id": game.id,
+                "whitePlayer": game.white_player,
+                "blackPlayer": game.black_player,
+                "whiteElo": game.white_elo,
+                "blackElo": game.black_elo,
+                "mainlineFens": game.mainline_fens,
+                "mainlineBestMoves": game.mainline_best_moves,
+                "branches": game.branches,
+                "mainlineMoveEvaluations": game.mainline_move_evaluations,
+                "mainlineMoveClassifications": game.mainline_move_classifications,
+                "createdAt": game.created_at,
+            }
+            for game in games
+        ]
+    }

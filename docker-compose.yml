@@ -32,12 +32,18 @@ services:
       - backend
 
   db:
-    image: postgres-16
-    container-name: chess-db
+    image: postgres:16
+    container_name: chess-db
     environment:
       POSTGRES_DB: chess_analyzer
       POSTGRES_USER: chess_user
       POSTGRES_PASSWORD: chess_password
-    ports: -"5432:5432"
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+# fix the errors when composing

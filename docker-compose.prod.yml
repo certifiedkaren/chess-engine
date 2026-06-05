@@ -23,3 +23,5 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+  # add db service

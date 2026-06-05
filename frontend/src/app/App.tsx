@@ -940,7 +940,7 @@ const App = () => {
       mainlineMoveClassifications: moveClassifications,
     };
 
-    saveGameData(payload);
+    await saveGameData(payload);
   }
 
   return (
