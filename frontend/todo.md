@@ -60,15 +60,19 @@
 ~~- bug: when user moves in new game it uses old opening name~~<br>
 ~~- bug: hover dot on graph stays on~~<br>
 ~~- add engine depth toggle~~<br>
+~~- add README with instructions on how to set it up~~<br>
+~~- fix the size being different on different screen sizes~~<br>
+~~- change calculations based on settings~~<br>
 
 - make waiting bar for moves extend
 - add a notification for errors
 - have storage of the state on user refresh
 - make the best moves clickable
 - add accuracy rating for each player and elo
-- change calculations based on settings
-- add README with instructions on how to set it up
-- fix the size being different on different screen sizes
+
+- add login system
+- save games to database if user logged in
+- add react router to change between pages (login/signup, game analysis, saved games)
 
 ### classifications
 

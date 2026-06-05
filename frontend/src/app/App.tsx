@@ -3,6 +3,7 @@ import ChessboardPanel from "../board/ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "../sidebar/Sidebar";
 import EvaluationBar from "../analysis/EvaluationBar";
+import Navbar from "../navbar/Navbar";
 import {
   analyzePosition,
   analyzeFenBatch,
@@ -944,78 +945,81 @@ const App = () => {
   }
 
   return (
-    <div className="container">
-      <div className="boardContainer">
-        <EvaluationBar
-          branches={branches}
-          currentIndex={currentIndex}
-          currentBranchIndex={currentBranchIndex}
-          currentBranchId={currentBranchId}
-          isOnMainline={isOnMainline}
-          playedMovesEvaluation={playedMovesEval}
-          boardOrientation={boardOrientation}
-        />
-        <ChessboardPanel
-          fen={currentFen}
-          mainlineMoves={mainlineMoves}
-          onUserMove={handleUserMove}
-          branches={branches}
-          bestMoves={bestMovesArr}
-          currentIndex={currentIndex}
-          isOnMainline={isOnMainline}
-          currentBranchId={currentBranchId}
-          currentBranchIndex={currentBranchIndex}
-          moveClassifications={moveClassifications}
-          boardOrientation={boardOrientation}
-          playerInfo={{
-            whiteUsername: whiteUsername,
-            blackUsername: blackUsername,
-            whiteElo: whiteElo,
-            blackElo: blackElo,
-          }}
-          settings={settings}
-        />
+    <>
+      <Navbar />
+      <div className="container" id="analyze">
+        <div className="boardContainer">
+          <EvaluationBar
+            branches={branches}
+            currentIndex={currentIndex}
+            currentBranchIndex={currentBranchIndex}
+            currentBranchId={currentBranchId}
+            isOnMainline={isOnMainline}
+            playedMovesEvaluation={playedMovesEval}
+            boardOrientation={boardOrientation}
+          />
+          <ChessboardPanel
+            fen={currentFen}
+            mainlineMoves={mainlineMoves}
+            onUserMove={handleUserMove}
+            branches={branches}
+            bestMoves={bestMovesArr}
+            currentIndex={currentIndex}
+            isOnMainline={isOnMainline}
+            currentBranchId={currentBranchId}
+            currentBranchIndex={currentBranchIndex}
+            moveClassifications={moveClassifications}
+            boardOrientation={boardOrientation}
+            playerInfo={{
+              whiteUsername: whiteUsername,
+              blackUsername: blackUsername,
+              whiteElo: whiteElo,
+              blackElo: blackElo,
+            }}
+            settings={settings}
+          />
+        </div>
+        <div className="sidebarWrapper">
+          <Sidebar
+            pgnState={{
+              pgn: pgn,
+              setPgn: setPgn,
+              isImporting: isImporting,
+              importProgress: importProgress,
+              sidebarView: sidebarView,
+              setSidebarView: setSidebarView,
+            }}
+            navigation={{
+              onNextMove: nextMove,
+              onPrevMove: prevMove,
+              gotoMainlineMove: gotoMainlineMove,
+              gotoBranchMove: gotoBranchMove,
+              onBeginning: gotoBeginning,
+              onEnd: gotoEnd,
+              returnToMainline: returnToMainline,
+              onFlipBoard: onFlipBoard,
+            }}
+            gameState={{
+              branches: branches,
+              bestMoves: bestMovesArr,
+              mainlineMoves: mainlineMoves,
+              currentIndex: currentIndex,
+              isOnMainline: isOnMainline,
+              currentBranchId: currentBranchId,
+              currentBranchIndex: currentBranchIndex,
+              moveClassification: moveClassifications,
+              playedMoveEvaluations: playedMovesEval,
+              settings: settings,
+              updateSettings: updateSettings,
+            }}
+            actions={{
+              onImportPgn: importPgn,
+              onBackButton: onBackButton,
+            }}
+          />
+        </div>
       </div>
-      <div className="sidebarWrapper">
-        <Sidebar
-          pgnState={{
-            pgn: pgn,
-            setPgn: setPgn,
-            isImporting: isImporting,
-            importProgress: importProgress,
-            sidebarView: sidebarView,
-            setSidebarView: setSidebarView,
-          }}
-          navigation={{
-            onNextMove: nextMove,
-            onPrevMove: prevMove,
-            gotoMainlineMove: gotoMainlineMove,
-            gotoBranchMove: gotoBranchMove,
-            onBeginning: gotoBeginning,
-            onEnd: gotoEnd,
-            returnToMainline: returnToMainline,
-            onFlipBoard: onFlipBoard,
-          }}
-          gameState={{
-            branches: branches,
-            bestMoves: bestMovesArr,
-            mainlineMoves: mainlineMoves,
-            currentIndex: currentIndex,
-            isOnMainline: isOnMainline,
-            currentBranchId: currentBranchId,
-            currentBranchIndex: currentBranchIndex,
-            moveClassification: moveClassifications,
-            playedMoveEvaluations: playedMovesEval,
-            settings: settings,
-            updateSettings: updateSettings,
-          }}
-          actions={{
-            onImportPgn: importPgn,
-            onBackButton: onBackButton,
-          }}
-        />
-      </div>
-    </div>
+    </>
   );
 };
 
