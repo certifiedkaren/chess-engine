@@ -38,8 +38,8 @@ type ChessboardProps = {
   playerInfo: {
     whiteUsername: string;
     blackUsername: string;
-    whiteElo: number | undefined;
-    blackElo: number | undefined;
+    whiteElo: number | null;
+    blackElo: number | null;
   };
   settings: Settings;
 };
@@ -324,7 +324,7 @@ function ChessboardPanel({
         <img src={topPlayer.icon} alt="chess king piece" />
         <span className={styles.playerText}>
           {topPlayer.username}
-          {topPlayer.elo !== undefined ? ` (${topPlayer.elo})` : ""}
+          {topPlayer.elo !== null ? `(${topPlayer.elo ?? ""})` : ""}
         </span>
       </div>
 
@@ -347,7 +347,7 @@ function ChessboardPanel({
         <img src={bottomPlayer.icon} alt="chess king piece" />
         <span className={styles.playerText}>
           {bottomPlayer.username}
-          {bottomPlayer.elo !== undefined ? ` (${bottomPlayer.elo})` : ""}
+          {bottomPlayer.elo !== null ? ` (${bottomPlayer.elo ?? ""})` : ""}
         </span>
       </div>
     </div>

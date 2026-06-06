@@ -1,18 +1,19 @@
+import { NavLink } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
 const Navbar = () => {
   return (
     <header className={styles.navbar}>
-      <a className={styles.brand} href="#analyze" aria-label="Chess Analyzer">
+      <NavLink className={styles.brand} to="/" aria-label="Chess Analyzer">
         Chess Analyzer
-      </a>
+      </NavLink>
       <nav className={styles.links} aria-label="Primary navigation">
-        <a className={styles.link} href="#analyze">
+        <NavLink className={styles.link} to="/">
           Analyze Game
-        </a>
-        <a className={styles.link} href="#saved-games">
+        </NavLink>
+        <NavLink className={styles.link} to="/saved-games">
           Saved Games
-        </a>
+        </NavLink>
       </nav>
     </header>
   );

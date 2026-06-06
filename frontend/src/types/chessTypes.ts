@@ -87,6 +87,7 @@ export type Game = {
   blackPlayer: string;
   whiteElo: number | null;
   blackElo: number | null;
+  mainlineMoves: GameMove[];
   mainlineFens: string[];
   mainlineBestMoves: (EngineMove[] | null)[];
   branches: Branch[];

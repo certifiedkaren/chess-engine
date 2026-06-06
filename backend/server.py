@@ -8,6 +8,7 @@ import asyncio
 import os
 from database import Base, engine as db_engine, get_db
 from models import Game
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 class AnalyzeRequest(BaseModel):
@@ -45,6 +46,11 @@ app = FastAPI()
 engine_lock = asyncio.Lock()
 
 Base.metadata.create_all(bind=db_engine)
+
+with db_engine.begin() as connection:
+    connection.execute(
+        text("ALTER TABLE games ADD COLUMN IF NOT EXISTS mainline_moves JSON DEFAULT '[]'")
+    )
 
 cors_origins = os.getenv("CORS_ORIGINS")
 origins = (
@@ -153,6 +159,7 @@ async def save_game(data: dict[str, Any] = Body(...), db: Session = Depends(get_
         black_player=game_data.get("blackPlayer"),
         white_elo=game_data.get("whiteElo"),
         black_elo=game_data.get("blackElo"),
+        mainline_moves=game_data.get("mainlineMoves", []),
         mainline_fens=game_data.get("mainlineFens", []),
         mainline_best_moves=game_data.get("mainlineBestMoves", []),
         branches=game_data.get("branches", []),
@@ -185,6 +192,7 @@ async def get_games(db: Session = Depends(get_db)):
                 "blackPlayer": game.black_player,
                 "whiteElo": game.white_elo,
                 "blackElo": game.black_elo,
+                "mainlineMoves": game.mainline_moves,
                 "mainlineFens": game.mainline_fens,
                 "mainlineBestMoves": game.mainline_best_moves,
                 "branches": game.branches,
