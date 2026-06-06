@@ -19,6 +19,7 @@ class Game(Base):
     white_elo: Mapped[int | None] = mapped_column(Integer)
     black_elo: Mapped[int | None] = mapped_column(Integer)
 
+    mainline_moves: Mapped[list[JsonObject]] = mapped_column(JSON, default=list)
     mainline_fens: Mapped[list[str]] = mapped_column(JSON, default=list)
     mainline_best_moves: Mapped[list[list[JsonObject] | None]] = mapped_column(
         JSON,

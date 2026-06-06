@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from pydantic import BaseModel
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")

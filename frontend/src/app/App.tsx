@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import ChessboardPanel from "../board/ChessboardPanel";
 import { Chess } from "chess.js";
 import Sidebar from "../sidebar/Sidebar";
@@ -8,6 +9,7 @@ import {
   analyzeFenBatch,
   fetchFenEvaluation,
   evaluateFensBatch,
+  fetchGames,
   saveGameData,
 } from "../api/api";
 import captureSound from "../assets/sounds/capture.mp3";
@@ -26,6 +28,7 @@ import {
   type SidebarView,
   type MoveClassificationResult,
   type Settings,
+  type SavedGame,
 } from "../types/chessTypes";
 import "./App.css";
 import {
@@ -38,6 +41,7 @@ const openings = await openingBook();
 const positionBook = getPositionBook(openings);
 
 const App = () => {
+  const { gameId } = useParams();
   const [mainlineMoves, setMainlineMoves] = useState<GameMove[]>([]);
   const [mainlineFens, setMainlineFens] = useState<string[]>([
     new Chess().fen(),
@@ -71,9 +75,9 @@ const App = () => {
     "white",
   );
   const [whiteUsername, setWhiteUsername] = useState("White");
-  const [whiteElo, setWhiteElo] = useState<number>();
+  const [whiteElo, setWhiteElo] = useState<number | null>(null);
   const [blackUsername, setBlackUsername] = useState("Black");
-  const [blackElo, setBlackElo] = useState<number>();
+  const [blackElo, setBlackElo] = useState<number | null>(null);
 
   const defaultSettings: Settings = {
     showEngineArrows: true,
@@ -114,19 +118,41 @@ const App = () => {
   });
 
   useEffect(() => {
+    if (gameId) return;
+
+    let isCancelled = false;
+
     async function analyzeStartingPosition() {
       const startingFen = new Chess().fen();
 
       const bestFenResult = await analyzeFen(startingFen);
-      setBestMovesArr([bestFenResult]);
+      if (isCancelled) return;
+
+      setBestMovesArr((prev) => {
+        const copy = [...prev];
+        copy[0] = bestFenResult;
+        return copy;
+      });
+
       const evaluationResult = await getFenEvaluation(
         startingFen,
         settings.engineDepth,
       );
-      setPlayedMovesEval([evaluationResult]);
+      if (isCancelled) return;
+
+      setPlayedMovesEval((prev) => {
+        const copy = [...prev];
+        copy[0] = evaluationResult;
+        return copy;
+      });
     }
+
     void analyzeStartingPosition();
-  }, []);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [gameId]);
 
   function gotoBeginning() {
     setCurrentIndex(0);
@@ -143,7 +169,11 @@ const App = () => {
     const lastIndex = mainlineFens.length - 1;
     setCurrentIndex(lastIndex);
     setCurrentFen(mainlineFens[lastIndex]);
-    playSound(mainlineMoves[lastIndex - 1].san);
+
+    const moveSan = mainlineMoves[lastIndex - 1]?.san;
+    if (moveSan) {
+      playSound(moveSan);
+    }
 
     if (!isOnMainline) {
       setCurrentBranchIndex(-1);
@@ -161,8 +191,10 @@ const App = () => {
 
     setCurrentIndex(move);
     setCurrentFen(mainlineFens[move]);
-    if (move > 0) {
-      playSound(mainlineMoves[move - 1].san);
+
+    const moveSan = mainlineMoves[move - 1]?.san;
+    if (moveSan) {
+      playSound(moveSan);
     }
   }
 
@@ -290,6 +322,21 @@ const App = () => {
     const totalMoves = Math.max(fens.length - 1 - startIndex, 0);
 
     try {
+      if (startIndex === 0 && fens[0]) {
+        const startingEvaluation = await getFenEvaluation(
+          fens[0],
+          settings.engineDepth,
+        );
+
+        if (startingEvaluation !== null) {
+          setPlayedMovesEval((prev) => {
+            const evaluationCopy = [...prev];
+            evaluationCopy[0] = startingEvaluation;
+            return evaluationCopy;
+          });
+        }
+      }
+
       for (let i = startIndex; i < fens.length - 1; i += chunkSize) {
         const beforeChunk = fens.slice(
           i,
@@ -926,13 +973,74 @@ const App = () => {
     }));
   }
 
+  function isGameOverFen(fen: string) {
+    try {
+      return new Chess(fen).isGameOver();
+    } catch {
+      return false;
+    }
+  }
+
+  function hasUsableBestMoves(
+    fen: string,
+    bestMoves: EngineMove[] | null | undefined,
+  ) {
+    if (bestMoves == null) return false;
+    if (bestMoves.length > 0) return true;
+    return isGameOverFen(fen);
+  }
+
+  function getSaveBlockReason() {
+    if (isImporting || isImportingRef.current) {
+      return "Analysis is still running. Wait for it to finish before saving.";
+    }
+
+    if (mainlineFens.length < 2) {
+      return "There is no game to save yet.";
+    }
+
+    if (mainlineMoves.length !== mainlineFens.length - 1) {
+      return "The move list is not ready yet.";
+    }
+
+    const missingBestMoveIndex = mainlineFens.findIndex(
+      (fen, index) => !hasUsableBestMoves(fen, bestMovesArr[index]),
+    );
+    if (missingBestMoveIndex !== -1) {
+      return `Best moves are still missing for position ${missingBestMoveIndex}.`;
+    }
+
+    const missingEvaluationIndex = mainlineFens.findIndex(
+      (_, index) => playedMovesEval[index] == null,
+    );
+    if (missingEvaluationIndex !== -1) {
+      return `Evaluation is still missing for position ${missingEvaluationIndex}.`;
+    }
+
+    const missingClassificationIndex = mainlineMoves.findIndex(
+      (_, index) => moveClassifications[index] == null,
+    );
+    if (missingClassificationIndex !== -1) {
+      return `Move classification is still missing for move ${missingClassificationIndex + 1}.`;
+    }
+
+    return null;
+  }
+
   async function saveGame() {
+    const saveBlockReason = getSaveBlockReason();
+    if (saveBlockReason) {
+      window.alert(saveBlockReason);
+      return;
+    }
+
     const payload = {
       whitePlayer: whiteUsername,
       blackPlayer: blackUsername,
       whiteElo: whiteElo ?? null,
       blackElo: blackElo ?? null,
 
+      mainlineMoves: mainlineMoves,
       mainlineFens: mainlineFens,
       mainlineBestMoves: bestMovesArr,
       branches: branches,
@@ -943,8 +1051,52 @@ const App = () => {
     await saveGameData(payload);
   }
 
+  function loadSavedGame(game: SavedGame) {
+    const savedMainlineFens = game.mainlineFens ?? [];
+    const savedMainlineMoves =
+      (game.mainlineMoves?.length ?? 0) > 0 ? game.mainlineMoves : [];
+    const savedBestMoves = game.mainlineBestMoves ?? [];
+    const savedEvaluations = game.mainlineMoveEvaluations ?? [];
+
+    setWhiteUsername(game.whitePlayer ?? "");
+    setBlackUsername(game.blackPlayer ?? "");
+    setWhiteElo(game.whiteElo ?? null);
+    setBlackElo(game.blackElo ?? null);
+
+    setMainlineMoves(savedMainlineMoves);
+    setMainlineFens(savedMainlineFens);
+    setCurrentFen(savedMainlineFens[0] ?? new Chess().fen());
+    setBestMovesArr(savedBestMoves);
+    setBranches(game.branches ?? []);
+    setPlayedMovesEval(savedEvaluations);
+    setMoveClassifications(game.mainlineMoveClassifications ?? []);
+
+    setCurrentIndex(0);
+    setCurrentBranchIndex(-1);
+    setCurrentBranchId(null);
+    setIsOnMainline(true);
+    setSidebarView("analysis");
+  }
+
+  useEffect(() => {
+    if (!gameId) return;
+
+    async function loadGameById() {
+      const gameIdNumber = Number(gameId);
+      if (Number.isNaN(gameIdNumber)) return;
+
+      const data = await fetchGames();
+      const savedGame = data.games.find((game) => game.id === gameIdNumber);
+      if (!savedGame) return;
+
+      loadSavedGame(savedGame);
+    }
+
+    void loadGameById();
+  }, [gameId]);
+
   return (
-    <div className="container">
+    <div className="container" id="analyze">
       <div className="boardContainer">
         <EvaluationBar
           branches={branches}
@@ -1012,6 +1164,7 @@ const App = () => {
           actions={{
             onImportPgn: importPgn,
             onBackButton: onBackButton,
+            onSaveGame: saveGame,
           }}
         />
       </div>

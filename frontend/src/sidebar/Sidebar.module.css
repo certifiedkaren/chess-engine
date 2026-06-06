@@ -23,6 +23,17 @@
   height: 40px;
 }
 
+.topBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysisTopBarActions {
+  width: calc(50% + 22px);
+  justify-content: space-between;
+}
+
 .backButton {
   display: inline-flex;
   align-items: center;

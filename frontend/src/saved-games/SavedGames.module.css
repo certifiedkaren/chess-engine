@@ -1,0 +1,6 @@
+.savedGamesContainer {
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  color: white;
+}

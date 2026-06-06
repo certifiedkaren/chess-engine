@@ -23,7 +23,11 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import ClassificationStats from "../analysis/ClassificationStats.tsx";
 import EvaluationGraph from "../analysis/EvaluationGraph.tsx";
 import SettingsComponent from "../settings/Settings.tsx";
-import { IconRotate, IconSettings } from "@tabler/icons-react";
+import {
+  IconRotate,
+  IconSettings,
+  IconDeviceFloppy,
+} from "@tabler/icons-react";
 
 type SidebarProps = {
   pgnState: {
@@ -60,6 +64,7 @@ type SidebarProps = {
   actions: {
     onImportPgn: (pgn: string) => Promise<void>;
     onBackButton: () => void;
+    onSaveGame: () => Promise<void>;
   };
 };
 
@@ -148,7 +153,7 @@ const Sidebar = ({
     updateSettings,
   } = gameState;
 
-  const { onImportPgn, onBackButton } = actions;
+  const { onImportPgn, onBackButton, onSaveGame } = actions;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const currentBranch = branches.find(
@@ -299,9 +304,21 @@ const Sidebar = ({
     <div className={styles.sidebarContainer}>
       <div className={styles.sidebarTopBar}>
         {sidebarView === "analysis" || sidebarView === "report" ? (
-          <button className={styles.backButton} onClick={() => onBackButton()}>
-            <IconArrowLeft stroke={1.75} />
-          </button>
+          <div
+            className={`${styles.topBarActions} ${styles.analysisTopBarActions}`}
+          >
+            <button className={styles.backButton} onClick={() => onBackButton()}>
+              <IconArrowLeft stroke={1.75} />
+            </button>
+            <button
+              type="button"
+              className={styles.backButton}
+              aria-label="Save game"
+              onClick={() => onSaveGame()}
+            >
+              <IconDeviceFloppy stroke={1.75} />
+            </button>
+          </div>
         ) : (
           <span className={styles.topBarSpacer} />
         )}
