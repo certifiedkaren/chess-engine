@@ -70,6 +70,7 @@ const App = () => {
   );
   const isImportingRef = useRef(false);
   const [sidebarView, setSidebarView] = useState<SidebarView>("import");
+  const [isSavePopupVisible, setIsSavePopupVisible] = useState(false);
 
   const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(
     "white",
@@ -163,6 +164,18 @@ const App = () => {
       isCancelled = true;
     };
   }, [gameId, settings.engineDepth, settings.numberOfLines]);
+
+  useEffect(() => {
+    if (!isSavePopupVisible) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setIsSavePopupVisible(false);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isSavePopupVisible]);
 
   async function analyzeStartingPosition() {
     const startingFen = new Chess().fen();
@@ -911,6 +924,7 @@ const App = () => {
     setCurrentBranchIndex(-1);
     setImportProgress(null);
     setSidebarView("import");
+    setIsSavePopupVisible(false);
 
     setWhiteUsername("White");
     setWhiteElo(null);
@@ -1091,6 +1105,7 @@ const App = () => {
     };
 
     await saveGameData(payload);
+    setIsSavePopupVisible(true);
   }
 
   function loadSavedGame(game: SavedGame) {
@@ -1139,6 +1154,23 @@ const App = () => {
 
   return (
     <div className="container" id="analyze">
+      {isSavePopupVisible && (
+        <div className="savePopup" role="status" aria-live="polite">
+          <div className="savePopupText">
+            <strong>Game saved</strong>
+            <span>Your analysis was saved successfully.</span>
+          </div>
+          <button
+            type="button"
+            className="savePopupClose"
+            aria-label="Close saved game popup"
+            title="Close"
+            onClick={() => setIsSavePopupVisible(false)}
+          >
+            x
+          </button>
+        </div>
+      )}
       <div className="boardContainer">
         <EvaluationBar
           branches={branches}
