@@ -29,6 +29,7 @@ const PgnImportForm = ({
         type="button"
         className={styles.analyzePgnButton}
         disabled={isImporting}
+        title={isImporting ? "Analyzing PGN" : "Analyze PGN"}
         onClick={() => onImportPgn(pgn)}
       >
         <IconSearch stroke={1.75} />

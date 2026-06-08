@@ -264,6 +264,8 @@ const Sidebar = ({
         <button
           type="button"
           className={styles.arrowButton}
+          aria-label="Go to beginning"
+          title="Go to beginning"
           onClick={() => onBeginning()}
         >
           {"<<"}
@@ -271,6 +273,8 @@ const Sidebar = ({
         <button
           type="button"
           className={styles.arrowButton}
+          aria-label="Previous move"
+          title="Previous move"
           onClick={() => onPrevMove()}
         >
           {"<"}
@@ -278,6 +282,8 @@ const Sidebar = ({
         <button
           type="button"
           className={styles.arrowButton}
+          aria-label="Next move"
+          title="Next move"
           onClick={() => onNextMove()}
         >
           {">"}
@@ -285,6 +291,8 @@ const Sidebar = ({
         <button
           type="button"
           className={styles.arrowButton}
+          aria-label="Go to end"
+          title="Go to end"
           onClick={() => onEnd()}
         >
           {">>"}
@@ -292,6 +300,8 @@ const Sidebar = ({
         <button
           type="button"
           className={styles.arrowButton}
+          aria-label="Flip board"
+          title="Flip board"
           onClick={() => onHandleClick()}
         >
           <IconRotate stroke={1.75} />
@@ -308,7 +318,10 @@ const Sidebar = ({
             className={`${styles.topBarActions} ${styles.analysisTopBarActions}`}
           >
             <button
+              type="button"
               className={styles.backButton}
+              aria-label="Back to import"
+              title="Back to import"
               onClick={() => onBackButton()}
             >
               <IconArrowLeft stroke={1.75} />
@@ -317,6 +330,7 @@ const Sidebar = ({
               type="button"
               className={styles.backButton}
               aria-label="Save game"
+              title="Save game"
               onClick={() => onSaveGame()}
             >
               <IconDeviceFloppy stroke={1.75} />
@@ -330,7 +344,7 @@ const Sidebar = ({
             type="button"
             className={styles.settingsButton}
             aria-label="Open settings"
-            title="settings"
+            title="Open settings"
             onClick={() => setIsSettingsOpen(true)}
           >
             <IconSettings stroke={1.75} />
@@ -365,6 +379,7 @@ const Sidebar = ({
             className={`${styles.tabButton} ${
               sidebarView === "report" ? styles.activeTabButton : ""
             }`}
+            title="Show report"
             onClick={() => setSidebarView("report")}
           >
             Report
@@ -373,6 +388,7 @@ const Sidebar = ({
             className={`${styles.tabButton} ${
               sidebarView === "analysis" ? styles.activeTabButton : ""
             }`}
+            title="Show analysis"
             onClick={() => setSidebarView("analysis")}
           >
             Analysis

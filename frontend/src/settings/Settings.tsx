@@ -50,6 +50,7 @@ function Settings({ settings, updateSettings, onClose }: SettingsProps) {
             type="button"
             className={styles.closeButton}
             aria-label="Close settings"
+            title="Close settings"
             onClick={onClose}
           >
             <IconX stroke={1.75} />

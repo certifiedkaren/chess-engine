@@ -23,7 +23,11 @@ const SavedGames = () => {
           <h3>
             {game.whitePlayer} vs {game.blackPlayer}
           </h3>
-          <button type="button" onClick={() => navigate(`/analyze/${game.id}`)}>
+          <button
+            type="button"
+            title={`View ${game.whitePlayer} vs ${game.blackPlayer}`}
+            onClick={() => navigate(`/analyze/${game.id}`)}
+          >
             View
           </button>
           <p>

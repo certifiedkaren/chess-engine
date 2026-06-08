@@ -75,6 +75,7 @@ const MovesList = ({ navigation, gameState }: MovesListProps) => {
                     {isWhiteMove ? `${moveNumber}. ` : ""}
                   </span>
                   <button
+                    type="button"
                     className={`${styles.branchMoveButton} ${
                       !isOnMainline &&
                       currentBranchId === branch.id &&
@@ -82,6 +83,7 @@ const MovesList = ({ navigation, gameState }: MovesListProps) => {
                         ? styles.currentMove
                         : ""
                     }`}
+                    title={`Go to branch move ${branchMove.san}`}
                     onClick={() => {
                       gotoBranchMove(branch.id, branchFenIndex);
                     }}
@@ -126,8 +128,10 @@ const MovesList = ({ navigation, gameState }: MovesListProps) => {
                     return (
                       <td key={currentMove}>
                         <button
+                          type="button"
                           className={`${styles.movesButton} 
                         ${isOnMainline && currentIndex === fenIndex ? styles.currentMove : ""}`}
+                          title={`Go to move ${move.san}`}
                           onClick={() => gotoMainlineMove(fenIndex)}
                         >
                           {iconSrc && (

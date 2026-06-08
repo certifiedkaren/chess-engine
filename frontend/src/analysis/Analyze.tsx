@@ -86,6 +86,7 @@ const AnalysisMoveRow = ({ move }: AnalysisMoveRowProps) => {
           className={styles.expandButton}
           aria-label={isExpanded ? "Collapse line" : "Expand line"}
           aria-expanded={isExpanded}
+          title={isExpanded ? "Collapse line" : "Expand line"}
           onClick={() => setIsExpanded((prev) => !prev)}
         >
           {isExpanded ? (
