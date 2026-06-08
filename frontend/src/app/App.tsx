@@ -80,11 +80,6 @@ const App = () => {
   const [blackUsername, setBlackUsername] = useState("Black");
   const [blackElo, setBlackElo] = useState<number | null>(null);
 
-  const [savedGameId, setSavedGameId] = useState<number | null>(null);
-  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string | null>(
-    null,
-  );
-
   const defaultSettings: Settings = {
     showEngineArrows: true,
     engineDepth: 15,
@@ -545,8 +540,6 @@ const App = () => {
       setIsOnMainline(true);
       setCurrentBranchId(null);
       setCurrentBranchIndex(-1);
-      setSavedGameId(null);
-      setLastSavedSnapshot(null);
       setIsSavePopupVisible(false);
       getUsernameAndElo(pgn);
 
@@ -931,8 +924,6 @@ const App = () => {
     setImportProgress(null);
     setSidebarView("import");
     setIsSavePopupVisible(false);
-    setSavedGameId(null);
-    setLastSavedSnapshot(null);
 
     setWhiteUsername("White");
     setWhiteElo(null);
@@ -1088,18 +1079,10 @@ const App = () => {
       return `Move classification is still missing for move ${missingClassificationIndex + 1}.`;
     }
 
-    const hasUnsavedChanges =
-      lastSavedSnapshot !== null &&
-      JSON.stringify(getGameSnapshot()) !== lastSavedSnapshot;
-
-    if (savedGameId !== null && !hasUnsavedChanges) {
-      return "This game has already been saved.";
-    }
-
     return null;
   }
 
-  function getGameSnapshot() {
+  function getSavePayload() {
     return {
       whitePlayer: whiteUsername,
       blackPlayer: blackUsername,
@@ -1122,11 +1105,9 @@ const App = () => {
       return;
     }
 
-    const payload = getGameSnapshot();
+    const payload = getSavePayload();
     try {
-      const savedGame = await saveGameData(payload);
-      setSavedGameId(savedGame.id);
-      setLastSavedSnapshot(JSON.stringify(payload));
+      await saveGameData(payload);
       setIsSavePopupVisible(true);
     } catch (error) {
       window.alert(
@@ -1143,18 +1124,6 @@ const App = () => {
     const savedEvaluations = game.mainlineMoveEvaluations ?? [];
     const savedBranches = game.branches ?? [];
     const savedClassifications = game.mainlineMoveClassifications ?? [];
-    const loadedSnapshot = {
-      whitePlayer: game.whitePlayer ?? "",
-      blackPlayer: game.blackPlayer ?? "",
-      whiteElo: game.whiteElo ?? null,
-      blackElo: game.blackElo ?? null,
-      mainlineMoves: savedMainlineMoves,
-      mainlineFens: savedMainlineFens,
-      mainlineBestMoves: savedBestMoves,
-      branches: savedBranches,
-      mainlineMoveEvaluations: savedEvaluations,
-      mainlineMoveClassifications: savedClassifications,
-    };
 
     setWhiteUsername(game.whitePlayer ?? "");
     setBlackUsername(game.blackPlayer ?? "");
@@ -1168,8 +1137,6 @@ const App = () => {
     setBranches(savedBranches);
     setPlayedMovesEval(savedEvaluations);
     setMoveClassifications(savedClassifications);
-    setSavedGameId(game.id);
-    setLastSavedSnapshot(JSON.stringify(loadedSnapshot));
     setIsSavePopupVisible(false);
 
     setCurrentIndex(0);

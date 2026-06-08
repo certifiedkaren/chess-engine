@@ -222,6 +222,10 @@ async def save_game(
 
     return {"id": game.id, "database": "ok"}
 
+@app.delete("/delete-game")
+async def delete_game(id: int, db: Session = Depends(get_db)):
+    pass
+
 
 @app.get("/games")
 async def get_games(db: Session = Depends(get_db)):
