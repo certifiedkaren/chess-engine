@@ -7,6 +7,7 @@ import styles from "./SavedGames.module.css";
 const SavedGames = () => {
   const [games, setGames] = useState<SavedGame[]>([]);
   const navigate = useNavigate();
+
   useEffect(() => {
     async function loadGames() {
       const data = await fetchGames();
@@ -28,32 +29,51 @@ const SavedGames = () => {
 
   return (
     <div className={styles.savedGamesContainer}>
-      <div>Saved Games</div>
-      {games.map((game) => (
-        <div key={game.id}>
-          <h3>
-            {game.whitePlayer} vs {game.blackPlayer}
-          </h3>
-          <button
-            type="button"
-            title={`View ${game.whitePlayer} vs ${game.blackPlayer}`}
-            onClick={() => navigate(`/analyze/${game.id}`)}
-          >
-            View
-          </button>
-          <p>
-            {game.whiteElo ?? "?"} - {game.blackElo ?? "?"}
-          </p>
-          <p>{game.createdAt.split("T")[0] ?? "no date found"}</p>
-          <button
-            type="button"
-            title="delete game"
-            onClick={() => handleDeleteGame(game.id)}
-          >
-            x
-          </button>
+      <div className={styles.savedGamesHeader}>
+        <h1>Saved Games</h1>
+        <span>{games.length} games</span>
+      </div>
+
+      {games.length === 0 ? (
+        <div className={styles.emptyState}>No saved games yet.</div>
+      ) : (
+        <div className={styles.gamesList}>
+          {games.map((game) => (
+            <article key={game.id} className={styles.gameRow}>
+              <div className={styles.gameDetails}>
+                <h2>
+                  {game.whitePlayer} vs {game.blackPlayer}
+                </h2>
+                <div className={styles.gameMeta}>
+                  <span>
+                    {game.whiteElo ?? "?"} - {game.blackElo ?? "?"}
+                  </span>
+                  <span>{game.createdAt.split("T")[0] ?? "No date"}</span>
+                </div>
+              </div>
+
+              <div className={styles.gameActions}>
+                <button
+                  type="button"
+                  className={styles.viewButton}
+                  title={`View ${game.whitePlayer} vs ${game.blackPlayer}`}
+                  onClick={() => navigate(`/analyze/${game.id}`)}
+                >
+                  View
+                </button>
+                <button
+                  type="button"
+                  className={styles.deleteButton}
+                  title={`Delete ${game.whitePlayer} vs ${game.blackPlayer}`}
+                  onClick={() => handleDeleteGame(game.id)}
+                >
+                  Delete
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 };

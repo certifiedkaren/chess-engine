@@ -70,6 +70,7 @@
 ~~- can click inside of saved game to analyze~~<br>
 ~~- add text when hovering over buttons (save, back, settings)~~<br>
 ~~- prevent from saving same game twice (no save button when loading saved game)~~<br>
+~~- can delete saved games~~<br>
 
 - make waiting bar for moves extend
 - add a notification for errors
@@ -79,7 +80,6 @@
 
 - add login system (if I decide to host it)
 
-- can delete saved games
 - if enough games make pages of 20
 - update readme
 
