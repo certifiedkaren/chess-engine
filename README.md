@@ -10,8 +10,9 @@ A full-stack chess analysis app for importing or playing through chess games, re
 
 ```text
 .
-├── backend/              # FastAPI server and Stockfish engine wrapper
+├── backend/              # FastAPI server, Stockfish wrapper, and database models
 ├── frontend/             # React/Vite chess analysis UI
+├── data/postgres/        # Local PostgreSQL data directory created by Compose
 ├── docker-compose.yml    # Development Compose setup
 ├── docker-compose.prod.yml # Production Compose setup
 └── README.md
@@ -37,6 +38,12 @@ The backend runs at:
 http://localhost:8000
 ```
 
+The development Compose setup also starts PostgreSQL:
+
+```text
+localhost:5432
+```
+
 The compose setup builds each service from its own directory:
 
 - `frontend/Dockerfile`
@@ -46,7 +53,11 @@ The backend Docker image installs Stockfish and sets:
 
 ```text
 STOCKFISH_PATH=/usr/games/stockfish
+DATABASE_URL=postgresql+psycopg://chess_user:chess_password@db:5432/chess_analyzer
 ```
+
+Saved games are stored in PostgreSQL. In development, the database files are
+mounted under `data/postgres/` so saved games persist across container restarts.
 
 ## Production With Docker
 
@@ -69,6 +80,10 @@ the backend container. The frontend production image builds with:
 VITE_API_URL=/api
 ```
 
+The backend now requires `DATABASE_URL`. Before using the production Compose
+file for saved games, add a production PostgreSQL service or point the backend
+at a managed PostgreSQL database.
+
 ## Local Development
 
 You can also run the frontend and backend directly on your machine.
@@ -85,9 +100,14 @@ Create `backend/.env`:
 
 ```text
 STOCKFISH_PATH=/path/to/stockfish
+DATABASE_URL=postgresql+psycopg://chess_user:chess_password@localhost:5432/chess_analyzer
 ```
 
 Use `which stockfish` to find the correct path for your machine.
+
+The backend requires PostgreSQL when running outside Docker. Create a database
+that matches `DATABASE_URL`, or run the Compose database service and point your
+local backend at `localhost:5432`.
 
 Create and activate a Python virtual environment:
 
@@ -140,8 +160,15 @@ The backend exposes these endpoints:
 - `POST /batch-analyze` - analyze multiple FENs
 - `POST /evaluate` - evaluate one FEN
 - `POST /evaluate-moves` - evaluate multiple FENs
+- `POST /save-game` - save one analyzed game to PostgreSQL
+- `GET /games` - fetch saved games, newest first
+- `DELETE /game/{game_id}` - delete one saved game
 
 Request bodies use FEN strings and optional engine settings such as `depth` and `num_results`.
+Saved game payloads include player metadata, mainline moves/FENs, engine lines,
+move evaluations, move classifications, and branches.
+
+The save endpoint rejects exact duplicate saved-game payloads with `409`.
 
 ## Environment Variables
 
@@ -149,6 +176,8 @@ Backend:
 
 ```text
 STOCKFISH_PATH=/path/to/stockfish
+DATABASE_URL=postgresql+psycopg://user:password@host:5432/database
+CORS_ORIGINS=http://localhost:5173,http://localhost:5174
 ```
 
 Frontend:
@@ -163,4 +192,7 @@ Do not commit `.env` files. They are intentionally excluded by `.gitignore` and 
 
 - The backend serializes Stockfish access with an async lock so concurrent API requests do not share the engine unsafely.
 - Batch analysis is limited to 50 FENs by the API.
+- Saved games require `DATABASE_URL`; the backend exits at startup if it is missing.
+- The saved games page supports viewing and deleting saved analyses.
+- Duplicate saved games are blocked by the backend before inserting a new row.
 - If Vite starts on a port other than `5173`, the backend CORS settings may need to include that port.
