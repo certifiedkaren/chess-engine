@@ -222,9 +222,16 @@ async def save_game(
 
     return {"id": game.id, "database": "ok"}
 
-@app.delete("/delete-game")
-async def delete_game(id: int, db: Session = Depends(get_db)):
-    pass
+@app.delete("/game/{game_id}")
+async def delete_game(game_id: int, db: Session = Depends(get_db)):
+    game = db.query(Game).filter(Game.id == game_id).first()
+    if game is None:
+        raise HTTPException(status_code=404, detail=f"failed to find game with id {game_id}")
+    
+    db.delete(game)
+    db.commit()
+
+    return {"message": "game deleted successfully"}
 
 
 @app.get("/games")

@@ -6,6 +6,7 @@ import {
   type AnalyzeBatchResponse,
   type EvaluateBatchResponse,
   type FetchGamesResponse,
+  type DeleteGameResponse,
   type Game,
 } from "../types/chessTypes.ts";
 
@@ -103,6 +104,19 @@ export async function fetchGames(): Promise<FetchGamesResponse> {
   if (!response.ok) {
     throw new Error(
       `Failed to Fetch Games: Response Status ${response.status}`,
+    );
+  }
+  return response.json();
+}
+
+export async function deleteGame(gameId: number): Promise<DeleteGameResponse> {
+  const response = await fetch(`${apiUrl}/game/${gameId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to delete game: Response Status ${response.status}`,
     );
   }
   return response.json();

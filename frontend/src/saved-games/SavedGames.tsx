@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchGames } from "../api/api";
+import { fetchGames, deleteGame } from "../api/api";
 import type { SavedGame } from "../types/chessTypes";
 import styles from "./SavedGames.module.css";
 
@@ -14,6 +14,17 @@ const SavedGames = () => {
     }
     loadGames();
   }, []);
+
+  async function handleDeleteGame(gameId: number) {
+    try {
+      await deleteGame(gameId);
+      setGames((prevGames) => prevGames.filter((game) => game.id !== gameId));
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to delete game",
+      );
+    }
+  }
 
   return (
     <div className={styles.savedGamesContainer}>
@@ -34,6 +45,13 @@ const SavedGames = () => {
             {game.whiteElo ?? "?"} - {game.blackElo ?? "?"}
           </p>
           <p>{game.createdAt.split("T")[0] ?? "no date found"}</p>
+          <button
+            type="button"
+            title="delete game"
+            onClick={() => handleDeleteGame(game.id)}
+          >
+            x
+          </button>
         </div>
       ))}
     </div>

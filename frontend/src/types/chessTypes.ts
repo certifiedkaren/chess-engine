@@ -40,6 +40,10 @@ export type FetchGamesResponse = {
   games: SavedGame[];
 };
 
+export type DeleteGameResponse = {
+  message: string;
+}
+
 export type Branch = {
   id: string;
   startIndex: number;
