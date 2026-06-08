@@ -68,6 +68,8 @@
 ~~- add react router to change between pages (login/signup, game analysis, saved games)~~<br>
 ~~- bug: names save if you load saved game and then go into a new one~~<br>
 ~~- can click inside of saved game to analyze~~<br>
+~~- add text when hovering over buttons (save, back, settings)~~<br>
+~~- prevent from saving same game twice (no save button when loading saved game)~~<br>
 
 - make waiting bar for moves extend
 - add a notification for errors
@@ -79,8 +81,7 @@
 
 - can delete saved games
 - if enough games make pages of 20
-- add text when hovering over buttons (save, back, settings)
-- prevent from saving same game twice (no save button when loading saved game)
+- update readme
 
 ### classifications
 

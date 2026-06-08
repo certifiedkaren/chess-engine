@@ -86,7 +86,13 @@ export async function saveGameData(gameData: Game) {
     body: JSON.stringify({ gameData }),
   });
   if (!response.ok) {
-    throw new Error(`Failed to Save Game: Response Status ${response.status}`);
+    const errorData: { detail?: string } = await response
+      .json()
+      .catch(() => ({}));
+    throw new Error(
+      errorData.detail ??
+        `Failed to Save Game: Response Status ${response.status}`,
+    );
   }
   return response.json();
 }

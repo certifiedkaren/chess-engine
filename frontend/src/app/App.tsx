@@ -80,6 +80,11 @@ const App = () => {
   const [blackUsername, setBlackUsername] = useState("Black");
   const [blackElo, setBlackElo] = useState<number | null>(null);
 
+  const [savedGameId, setSavedGameId] = useState<number | null>(null);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string | null>(
+    null,
+  );
+
   const defaultSettings: Settings = {
     showEngineArrows: true,
     engineDepth: 15,
@@ -136,12 +141,10 @@ const App = () => {
             console.error(error);
             return null;
           }),
-        fetchFenEvaluation(startingFen, settings.engineDepth).catch(
-          (error) => {
-            console.error(error);
-            return null;
-          },
-        ),
+        fetchFenEvaluation(startingFen, settings.engineDepth).catch((error) => {
+          console.error(error);
+          return null;
+        }),
       ]);
       if (isCancelled) return;
 
@@ -542,6 +545,9 @@ const App = () => {
       setIsOnMainline(true);
       setCurrentBranchId(null);
       setCurrentBranchIndex(-1);
+      setSavedGameId(null);
+      setLastSavedSnapshot(null);
+      setIsSavePopupVisible(false);
       getUsernameAndElo(pgn);
 
       const history = temp.history({ verbose: true });
@@ -925,6 +931,8 @@ const App = () => {
     setImportProgress(null);
     setSidebarView("import");
     setIsSavePopupVisible(false);
+    setSavedGameId(null);
+    setLastSavedSnapshot(null);
 
     setWhiteUsername("White");
     setWhiteElo(null);
@@ -1080,17 +1088,19 @@ const App = () => {
       return `Move classification is still missing for move ${missingClassificationIndex + 1}.`;
     }
 
+    const hasUnsavedChanges =
+      lastSavedSnapshot !== null &&
+      JSON.stringify(getGameSnapshot()) !== lastSavedSnapshot;
+
+    if (savedGameId !== null && !hasUnsavedChanges) {
+      return "This game has already been saved.";
+    }
+
     return null;
   }
 
-  async function saveGame() {
-    const saveBlockReason = getSaveBlockReason();
-    if (saveBlockReason) {
-      window.alert(saveBlockReason);
-      return;
-    }
-
-    const payload = {
+  function getGameSnapshot() {
+    return {
       whitePlayer: whiteUsername,
       blackPlayer: blackUsername,
       whiteElo: whiteElo ?? null,
@@ -1103,9 +1113,26 @@ const App = () => {
       mainlineMoveEvaluations: playedMovesEval,
       mainlineMoveClassifications: moveClassifications,
     };
+  }
 
-    await saveGameData(payload);
-    setIsSavePopupVisible(true);
+  async function saveGame() {
+    const saveBlockReason = getSaveBlockReason();
+    if (saveBlockReason) {
+      window.alert(saveBlockReason);
+      return;
+    }
+
+    const payload = getGameSnapshot();
+    try {
+      const savedGame = await saveGameData(payload);
+      setSavedGameId(savedGame.id);
+      setLastSavedSnapshot(JSON.stringify(payload));
+      setIsSavePopupVisible(true);
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to save game.",
+      );
+    }
   }
 
   function loadSavedGame(game: SavedGame) {
@@ -1114,6 +1141,20 @@ const App = () => {
       (game.mainlineMoves?.length ?? 0) > 0 ? game.mainlineMoves : [];
     const savedBestMoves = game.mainlineBestMoves ?? [];
     const savedEvaluations = game.mainlineMoveEvaluations ?? [];
+    const savedBranches = game.branches ?? [];
+    const savedClassifications = game.mainlineMoveClassifications ?? [];
+    const loadedSnapshot = {
+      whitePlayer: game.whitePlayer ?? "",
+      blackPlayer: game.blackPlayer ?? "",
+      whiteElo: game.whiteElo ?? null,
+      blackElo: game.blackElo ?? null,
+      mainlineMoves: savedMainlineMoves,
+      mainlineFens: savedMainlineFens,
+      mainlineBestMoves: savedBestMoves,
+      branches: savedBranches,
+      mainlineMoveEvaluations: savedEvaluations,
+      mainlineMoveClassifications: savedClassifications,
+    };
 
     setWhiteUsername(game.whitePlayer ?? "");
     setBlackUsername(game.blackPlayer ?? "");
@@ -1124,9 +1165,12 @@ const App = () => {
     setMainlineFens(savedMainlineFens);
     setCurrentFen(savedMainlineFens[0] ?? new Chess().fen());
     setBestMovesArr(savedBestMoves);
-    setBranches(game.branches ?? []);
+    setBranches(savedBranches);
     setPlayedMovesEval(savedEvaluations);
-    setMoveClassifications(game.mainlineMoveClassifications ?? []);
+    setMoveClassifications(savedClassifications);
+    setSavedGameId(game.id);
+    setLastSavedSnapshot(JSON.stringify(loadedSnapshot));
+    setIsSavePopupVisible(false);
 
     setCurrentIndex(0);
     setCurrentBranchIndex(-1);

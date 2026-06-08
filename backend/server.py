@@ -152,22 +152,64 @@ async def evaluate_moves(data: EvaluateMovesRequest):
     return {"move_evaluations": engine_evaluations}
 
 @app.post("/save-game")
-async def save_game(data: dict[str, Any] = Body(...), db: Session = Depends(get_db)):
+async def save_game(
+    data: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
     game_data = data.get("gameData", data)
-    game = Game(
-        white_player=game_data.get("whitePlayer"),
-        black_player=game_data.get("blackPlayer"),
-        white_elo=game_data.get("whiteElo"),
-        black_elo=game_data.get("blackElo"),
-        mainline_moves=game_data.get("mainlineMoves", []),
-        mainline_fens=game_data.get("mainlineFens", []),
-        mainline_best_moves=game_data.get("mainlineBestMoves", []),
-        branches=game_data.get("branches", []),
-        mainline_move_evaluations=game_data.get("mainlineMoveEvaluations", []),
-        mainline_move_classifications=game_data.get(
+    requested_game = {"whitePlayer": game_data.get("whitePlayer"),
+        "blackPlayer": game_data.get("blackPlayer"),
+        "whiteElo": game_data.get("whiteElo"),
+        "blackElo": game_data.get("blackElo"),
+        "mainlineMoves": game_data.get("mainlineMoves", []),
+        "mainlineFens": game_data.get("mainlineFens", []),
+        "mainlineBestMoves": game_data.get("mainlineBestMoves", []),
+        "branches": game_data.get("branches", []),
+        "mainlineMoveEvaluations": game_data.get(
+            "mainlineMoveEvaluations",
+            [],
+        ),
+        "mainlineMoveClassifications": game_data.get(
             "mainlineMoveClassifications",
             [],
         ),
+    }
+
+    saved_games = db.query(Game).all()
+    for saved_game in saved_games:
+        existing_game = {
+            "whitePlayer": saved_game.white_player,
+            "blackPlayer": saved_game.black_player,
+            "whiteElo": saved_game.white_elo,
+            "blackElo": saved_game.black_elo,
+            "mainlineMoves": saved_game.mainline_moves,
+            "mainlineFens": saved_game.mainline_fens,
+            "mainlineBestMoves": saved_game.mainline_best_moves,
+            "branches": saved_game.branches,
+            "mainlineMoveEvaluations": saved_game.mainline_move_evaluations,
+            "mainlineMoveClassifications": (
+                saved_game.mainline_move_classifications
+            ),
+        }
+        if existing_game == requested_game:
+            raise HTTPException(
+                status_code=409,
+                detail="This game has already been saved.",
+            )
+
+    game = Game(
+        white_player=requested_game["whitePlayer"],
+        black_player=requested_game["blackPlayer"],
+        white_elo=requested_game["whiteElo"],
+        black_elo=requested_game["blackElo"],
+        mainline_moves=requested_game["mainlineMoves"],
+        mainline_fens=requested_game["mainlineFens"],
+        mainline_best_moves=requested_game["mainlineBestMoves"],
+        branches=requested_game["branches"],
+        mainline_move_evaluations=requested_game["mainlineMoveEvaluations"],
+        mainline_move_classifications=requested_game[
+            "mainlineMoveClassifications"
+        ],
     )
 
     try:
