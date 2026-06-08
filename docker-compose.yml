@@ -45,5 +45,3 @@ services:
 
 volumes:
   postgres_data:
-
-# fix the errors when composing

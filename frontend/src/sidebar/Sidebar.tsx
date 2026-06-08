@@ -307,7 +307,10 @@ const Sidebar = ({
           <div
             className={`${styles.topBarActions} ${styles.analysisTopBarActions}`}
           >
-            <button className={styles.backButton} onClick={() => onBackButton()}>
+            <button
+              className={styles.backButton}
+              onClick={() => onBackButton()}
+            >
               <IconArrowLeft stroke={1.75} />
             </button>
             <button
@@ -327,6 +330,7 @@ const Sidebar = ({
             type="button"
             className={styles.settingsButton}
             aria-label="Open settings"
+            title="settings"
             onClick={() => setIsSettingsOpen(true)}
           >
             <IconSettings stroke={1.75} />

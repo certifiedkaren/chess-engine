@@ -122,10 +122,26 @@ const App = () => {
 
     let isCancelled = false;
 
-    async function analyzeStartingPosition() {
+    async function analyzeInitialPosition() {
       const startingFen = new Chess().fen();
-
-      const bestFenResult = await analyzeFen(startingFen);
+      const [bestFenResult, evaluationResult] = await Promise.all([
+        analyzePosition(
+          startingFen,
+          settings.engineDepth,
+          settings.numberOfLines,
+        )
+          .then((response) => response.best_moves)
+          .catch((error) => {
+            console.error(error);
+            return null;
+          }),
+        fetchFenEvaluation(startingFen, settings.engineDepth).catch(
+          (error) => {
+            console.error(error);
+            return null;
+          },
+        ),
+      ]);
       if (isCancelled) return;
 
       setBestMovesArr((prev) => {
@@ -134,12 +150,6 @@ const App = () => {
         return copy;
       });
 
-      const evaluationResult = await getFenEvaluation(
-        startingFen,
-        settings.engineDepth,
-      );
-      if (isCancelled) return;
-
       setPlayedMovesEval((prev) => {
         const copy = [...prev];
         copy[0] = evaluationResult;
@@ -147,12 +157,32 @@ const App = () => {
       });
     }
 
-    void analyzeStartingPosition();
+    void analyzeInitialPosition();
 
     return () => {
       isCancelled = true;
     };
-  }, [gameId]);
+  }, [gameId, settings.engineDepth, settings.numberOfLines]);
+
+  async function analyzeStartingPosition() {
+    const startingFen = new Chess().fen();
+    const [bestFenResult, evaluationResult] = await Promise.all([
+      analyzeFen(startingFen),
+      getFenEvaluation(startingFen, settings.engineDepth),
+    ]);
+
+    setBestMovesArr((prev) => {
+      const copy = [...prev];
+      copy[0] = bestFenResult;
+      return copy;
+    });
+
+    setPlayedMovesEval((prev) => {
+      const copy = [...prev];
+      copy[0] = evaluationResult;
+      return copy;
+    });
+  }
 
   function gotoBeginning() {
     setCurrentIndex(0);
@@ -763,6 +793,9 @@ const App = () => {
       if (bestMovesBefore == null) return;
       setPlayedMovesEval((prev) => {
         const evaluationCopy = [...prev];
+        if (beforeEvaluationResult !== null) {
+          evaluationCopy[playedMoveIndex] = beforeEvaluationResult;
+        }
         evaluationCopy[currentFenIndex] = afterEvaluationResult;
         return evaluationCopy;
       });
@@ -863,19 +896,28 @@ const App = () => {
   }
 
   function onBackButton() {
+    const startingFen = new Chess().fen();
+
     setMainlineMoves([]);
-    setMainlineFens([new Chess().fen()]);
-    setBestMovesArr([]);
+    setMainlineFens([startingFen]);
+    setBestMovesArr([null]);
     setBranches([]);
-    setPlayedMovesEval([]);
+    setPlayedMovesEval([null]);
     setMoveClassifications([]);
-    setCurrentFen(new Chess().fen());
+    setCurrentFen(startingFen);
     setCurrentIndex(0);
     setIsOnMainline(true);
     setCurrentBranchId(null);
     setCurrentBranchIndex(-1);
     setImportProgress(null);
     setSidebarView("import");
+
+    setWhiteUsername("White");
+    setWhiteElo(null);
+    setBlackUsername("Black");
+    setBlackElo(null);
+
+    void analyzeStartingPosition();
   }
 
   function bestMoveToCentipawn(bestMove: EngineMove) {

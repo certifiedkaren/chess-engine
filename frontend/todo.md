@@ -66,6 +66,8 @@
 ~~- save games to database~~<br>
 ~~- save games to database inside project directory~~<br>
 ~~- add react router to change between pages (login/signup, game analysis, saved games)~~<br>
+~~- bug: names save if you load saved game and then go into a new one~~<br>
+~~- can click inside of saved game to analyze~~<br>
 
 - make waiting bar for moves extend
 - add a notification for errors
@@ -75,12 +77,10 @@
 
 - add login system (if I decide to host it)
 
-- can click inside game to analyze
 - can delete saved games
 - if enough games make pages of 20
 - add text when hovering over buttons (save, back, settings)
 - prevent from saving same game twice (no save button when loading saved game)
-- bug: names save if you load saved game and then go into a new one
 
 ### classifications
 
