@@ -3,10 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { fetchGames, deleteGame } from "../api/api";
 import type { SavedGame } from "../types/chessTypes";
 import styles from "./SavedGames.module.css";
+import { IconChevronRight, IconChevronLeft } from "@tabler/icons-react";
 
 const SavedGames = () => {
+  const gamesPerPage = 20;
+  const [page, setPage] = useState(1);
   const [games, setGames] = useState<SavedGame[]>([]);
   const navigate = useNavigate();
+
+  const totalPages = Math.ceil(games.length / gamesPerPage);
+  const visibleGames = games.slice(
+    (page - 1) * gamesPerPage,
+    page * gamesPerPage,
+  );
 
   useEffect(() => {
     async function loadGames() {
@@ -38,7 +47,7 @@ const SavedGames = () => {
         <div className={styles.emptyState}>No saved games yet.</div>
       ) : (
         <div className={styles.gamesList}>
-          {games.map((game) => (
+          {visibleGames.map((game) => (
             <article key={game.id} className={styles.gameRow}>
               <div className={styles.gameDetails}>
                 <h2>
@@ -72,6 +81,23 @@ const SavedGames = () => {
               </div>
             </article>
           ))}
+          <div className={styles.pageChangeContainer}>
+            <button
+              type="button"
+              className={styles.pageChangeButton}
+              onClick={() => setPage((page) => Math.max(1, page - 1))}
+            >
+              <IconChevronLeft stroke={1.75} />
+            </button>
+            <span style={{ color: "white" }}>{page}</span>
+            <button
+              type="button"
+              className={styles.pageChangeButton}
+              onClick={() => setPage((page) => Math.min(page + 1, totalPages))}
+            >
+              <IconChevronRight stroke={1.75} />
+            </button>
+          </div>
         </div>
       )}
     </div>
