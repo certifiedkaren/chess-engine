@@ -8,6 +8,9 @@ services:
     environment:
       - STOCKFISH_PATH=/usr/games/stockfish
       - CORS_ORIGINS=http://localhost:8080,http://localhost
+      - DATABASE_URL=postgresql+psycopg://chess_user:chess_password@db:5432/chess_analyzer
+    depends_on:
+      - db
     restart: unless-stopped
 
   frontend:
@@ -24,4 +27,16 @@ services:
       - backend
     restart: unless-stopped
 
-  # add db service
+  db:
+    image: postgres:16
+    container_name: chess-db-prod
+    environment:
+      POSTGRES_DB: chess_analyzer
+      POSTGRES_USER: chess_user
+      POSTGRES_PASSWORD: chess_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

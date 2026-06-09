@@ -80,9 +80,8 @@ the backend container. The frontend production image builds with:
 VITE_API_URL=/api
 ```
 
-The backend now requires `DATABASE_URL`. Before using the production Compose
-file for saved games, add a production PostgreSQL service or point the backend
-at a managed PostgreSQL database.
+The production Compose file includes a PostgreSQL service for saved games and
+sets the backend `DATABASE_URL` to use it.
 
 ## Local Development
 
